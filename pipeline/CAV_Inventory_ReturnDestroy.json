@@ -1,0 +1,147 @@
+{
+	"name": "CAV_Inventory_ReturnDestroy",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy CAV_Inventory_ReturnDestroy",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": true,
+							"modifiedDatetimeStart": {
+								"value": "@getPastTime(24,'Hour')",
+								"type": "Expression"
+							},
+							"enablePartitionDiscovery": false,
+							"fileFilter": "ASCMLIITR.CSV"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "TRUNCATE TABLE [MRR_CAV_Inventory_ReturnDestroy]",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"tableOption": "autoCreate",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "MRX",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "MRX",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ITM",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "ITM",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "STOR",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "STOR",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ITUR",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "ITUR",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "QUN",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "QUN",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "MLIDAT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "MLIDAT",
+									"type": "String",
+									"physicalType": "String"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "CAV",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "MRR_CAV_Inventory_ReturnDestroy",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Inventory Return\\Destroy/CAV"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-21T10:53:38Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

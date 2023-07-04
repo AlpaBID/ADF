@@ -1,0 +1,846 @@
+{
+	"name": "SalesCav Mirror To Blob",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy To blob",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Set FileName",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.02:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobStorageWriteSettings",
+							"copyBehavior": "MergeFiles"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "SalesFile",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "blobSalesTargets",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": {
+								"value": "@variables('SalesFileName')",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Set Run Date",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "RunDate",
+					"value": {
+						"value": "@formatDateTime(utcnow(),'dd/MM/yyyy')\n",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set FileName",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set Run Date",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "SalesFileName",
+					"value": {
+						"value": "@concat('sales_',formatDateTime(utcnow(),'yyyyMMdd'))",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Copy To blob SalesNew",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Set FileName",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.02:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobStorageWriteSettings",
+							"copyBehavior": "MergeFiles"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "MR",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "MR",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "FY",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "FY",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "INVOICE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "INVOICE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "AGENTPRIVATE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "AGENTPRIVATE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "CUSTOMER",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "CUSTOMER",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DISCOUNTPERCENT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "DISCOUNTPERCENT",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DISCOUNTSUM",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "DISCOUNTSUM",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "GROSS",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "GROSS",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "INVDATE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "INVDATE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "SALEDISCOUNT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "SALEDISCOUNT",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "SECONDDRIVER",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "SECONDDRIVER",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "STORE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "STORE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "TOTALDUESUM",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "TOTALDUESUM",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "TRADEDISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "TRADEDISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "VAT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "VAT",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "AGENT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "AGENT",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "DISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "EXTRADISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "EXTRADISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "SalesNewFile",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "blobSalesNewTargets",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": "@variables('SalesFileName')"
+						}
+					}
+				]
+			},
+			{
+				"name": "Copy To blob SalesNew2",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Set FileName",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.02:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobStorageWriteSettings",
+							"copyBehavior": "MergeFiles"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "MR",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "MR",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "FY",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "FY",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "INVOICE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "INVOICE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "INVLINE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "INVLINE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "CASES",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "CASES",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "FACTOR",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "FACTOR",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "GROSSPRC1",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "GROSSPRC1",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "GROSSSUM",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "GROSSSUM",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ITEMCODE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "ITEMCODE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "LINENET",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "LINENET",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "LINESALEDISCOUNT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "LINESALEDISCOUNT",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "SINGELQUN",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "SINGELQUN",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "GROSSPRC",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "GROSSPRC",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "INVPREPARDATE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "INVPREPARDATE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "HAN2",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "HAN2",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "HAN3",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "HAN3",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "HANADDCODE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "HANADDCODE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "HANADDPRECENT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "HANADDPRECENT",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "HANMIVZACODE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "HANMIVZACODE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "HANMIVZAPERCENT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "HANMIVZAPERCENT",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "HANREGULARCODE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "HANREGULARCODE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "HANREGULARPERCENT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "HANREGULARPERCENT",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "LINEDISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "LINEDISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "LINEEXTRADISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "LINEEXTRADISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "LINESALEDISCOUNTSUM",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "LINESALEDISCOUNTSUM",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "LINETRADEDISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "LINETRADEDISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "RESONCODE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "RESONCODE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "BONGROUP",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "BONGROUP",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "BONVAL",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "BONVAL",
+									"type": "String",
+									"physicalType": "String"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "SalesNewFile2",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "blobSalesNew2Targets",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": "@variables('SalesFileName')"
+						}
+					}
+				]
+			}
+		],
+		"variables": {
+			"RunDate": {
+				"type": "String",
+				"defaultValue": "18/01/2020"
+			},
+			"SalesFileName": {
+				"type": "String",
+				"defaultValue": "sales_18012020"
+			}
+		},
+		"folder": {
+			"name": "Blob"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-14T15:06:16Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

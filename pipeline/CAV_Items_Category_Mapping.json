@@ -1,0 +1,146 @@
+{
+	"name": "CAV_Items_Category_Mapping",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy CAV_Items_Category_Mapping",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": true,
+							"modifiedDatetimeStart": {
+								"value": "@getPastTime(24,'Hour')",
+								"type": "Expression"
+							},
+							"enablePartitionDiscovery": false,
+							"fileFilter": "ASCMLIIFUN.CSV"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "TRUNCATE TABLE [MRR_CAV_Items_Category_Mapping]",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "MRX",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "MRX",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ITM",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "ITM",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "IFUN",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "IFUN",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "IFUNNM",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "IFUNNM",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "VAL",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "VAL",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "VALNM",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "VALNM",
+									"type": "String",
+									"physicalType": "String"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "CAV",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "MRR_CAV_Items_Category_Mapping",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Items/CAV"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-15T09:59:31Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

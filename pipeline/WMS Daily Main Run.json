@@ -1,0 +1,178 @@
+{
+	"name": "WMS Daily Main Run",
+	"properties": {
+		"activities": [
+			{
+				"name": "sp_DWH_WMS_Daily",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Copy_WMS_Daily",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[sp_DWH_WMS_Daily]"
+				},
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Copy_WMS_Daily",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "with CTE_LOADS as\n(\nSELECT\n\t   [CONSIGNEE] AS 'סוג מאחסן'\n      ,[SKU] AS 'מספר פריט'\n      ,[STATUS] AS 'סטטוס במלאי'\n\t  ,SUM([UNITS]) AS 'מלאי עדכני'\n\nFROM [SCEXPERT].[dbo].[LOADS]\n\nWHERE 1=1\nand (STATUS = 'NANG' OR STATUS ='NAGO' OR STATUS ='AVAILABLE' OR STATUS ='BOOKED' OR STATUS ='ANGO')\nand [CONSIGNEE] in ('10')\nand [SKU] not like '8%'\ngroup by [CONSIGNEE], [SKU], [STATUS]\n)\n\nselect CTE_LOADS.*\n\t  ,sku.SKUSHORTDESC\n\t  ,sku.MANUFACTURERSKU\n\t  ,sku.BASEITEM\nfrom CTE_LOADS left join SKU sku on CTE_LOADS.[מספר פריט] = sku.SKU",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "truncate table MRR_WMS_Daily",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"tableOption": "autoCreate",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "סוג מאחסן",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "סוג מאחסן",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "מספר פריט",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מספר פריט",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "סטטוס במלאי",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "סטטוס במלאי",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "מלאי עדכני",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 4,
+									"precision": 38
+								},
+								"sink": {
+									"name": "מלאי עדכני",
+									"type": "Decimal",
+									"physicalType": "Decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "SKUSHORTDESC",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "SKUSHORTDESC",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "MANUFACTURERSKU",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "MANUFACTURERSKU",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "BASEITEM",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "BASEITEM",
+									"type": "String",
+									"physicalType": "String"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "WMS",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "MRR_WMS_Eroz_Daily",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "WMS Daily"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-22T15:06:14Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

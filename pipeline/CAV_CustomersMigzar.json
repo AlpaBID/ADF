@@ -1,0 +1,99 @@
+{
+	"name": "CAV_CustomersMigzar",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy CAV_Customers_Migzar",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "truncate table mrr_cav_customersmigzar",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "CUSTOMER",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "CUSTOMER",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "מגזר",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "מגזר",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "CAV_dim",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": "ASCSVKCST.CSV"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DWH_Dynamic",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "MRR_CAV_CustomersMigzar"
+						}
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Customers/CAV"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-15T09:59:31Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

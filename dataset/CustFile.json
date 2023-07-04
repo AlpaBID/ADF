@@ -1,0 +1,84 @@
+{
+	"name": "CustFile",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "FileServer_cav",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Cav Files For Daily"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation",
+				"fileName": "CUST1.csv"
+			},
+			"columnDelimiter": ",",
+			"encodingName": "WINDOWS-1255",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "��' ����",
+				"type": "String"
+			},
+			{
+				"name": "�� ����",
+				"type": "String"
+			},
+			{
+				"name": "�����2",
+				"type": "String"
+			},
+			{
+				"name": "��' ���",
+				"type": "String"
+			},
+			{
+				"name": "���4",
+				"type": "String"
+			},
+			{
+				"name": "�����5",
+				"type": "String"
+			},
+			{
+				"name": "�����6",
+				"type": "String"
+			},
+			{
+				"name": "�����7",
+				"type": "String"
+			},
+			{
+				"name": "���� �����",
+				"type": "String"
+			},
+			{
+				"name": "���9",
+				"type": "String"
+			},
+			{
+				"name": "���� ���",
+				"type": "String"
+			},
+			{
+				"name": "��� ��",
+				"type": "String"
+			},
+			{
+				"name": "���� ��� ��",
+				"type": "String"
+			},
+			{
+				"name": "����� �����",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

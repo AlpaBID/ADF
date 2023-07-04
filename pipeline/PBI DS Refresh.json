@@ -1,0 +1,170 @@
+{
+	"name": "PBI DS Refresh",
+	"properties": {
+		"activities": [
+			{
+				"name": "PBI DS Refresh",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat(\n'https://api.powerbi.com/v1.0/myorg/groups/'\n, pipeline().parameters.WorkspaceID\n, '/datasets/'\n, pipeline().parameters.DatasetID\n, '/refreshes'\n)",
+						"type": "Expression"
+					},
+					"method": "POST",
+					"body": "{“notifyOption”:”NoNotification”}",
+					"authentication": {
+						"type": "ServicePrincipal",
+						"userTenant": "00b3f377-c1d0-4930-ba7b-f2e5ec4bf11f",
+						"username": "3aa907c5-c2bc-4f64-937b-75897fcbb73a",
+						"resource": "https://analysis.windows.net/powerbi/api",
+						"password": {
+							"type": "SecureString",
+							"value": "**********"
+						}
+					}
+				}
+			},
+			{
+				"name": "Until1",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "PBI DS Refresh",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@not(\nequals(\nfirst(\njson(\nstring(\nactivity('Get dataset refresh status').output\n)\n).value\n).status,'Unknown'\n)\n)",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Get dataset refresh status",
+							"type": "WebActivity",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"url": {
+									"value": "@concat(\n'https://api.powerbi.com/v1.0/myorg/groups/'\n,pipeline().parameters.WorkspaceID\n,'/datasets/',pipeline().parameters.DatasetID\n,'/refreshes?$top=1'\n)",
+									"type": "Expression"
+								},
+								"method": "GET",
+								"headers": {
+									"Content-Type": "application/json"
+								},
+								"authentication": {
+									"type": "ServicePrincipal",
+									"userTenant": "00b3f377-c1d0-4930-ba7b-f2e5ec4bf11f",
+									"username": "3aa907c5-c2bc-4f64-937b-75897fcbb73a",
+									"resource": "https://analysis.windows.net/powerbi/api",
+									"password": {
+										"type": "SecureString",
+										"value": "**********"
+									}
+								}
+							}
+						},
+						{
+							"name": "If Condition1",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "Get dataset refresh status",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@equals(\nfirst(\njson(\nstring(\nactivity('Get dataset refresh status').output\n)\n).value\n).status,'Unknown'\n)",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "Wait 15 seconds",
+										"type": "Wait",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"waitTimeInSeconds": 300
+										}
+									}
+								]
+							}
+						}
+					],
+					"timeout": "0.12:00:00"
+				}
+			},
+			{
+				"name": "If Condition2",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Until1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(\nfirst(\njson(\nstring(\nactivity('Get dataset refresh status').output\n)\n).value\n).status,'Failed'\n)",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "FailedRefreshingDataset",
+							"type": "Fail",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"message": {
+									"value": "@string(\njson(\nfirst(\njson(\nstring(\nactivity('Get dataset refresh status').output\n)\n).value\n).serviceExceptionJson\n)\n)",
+									"type": "Expression"
+								},
+								"errorCode": "1000"
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"WorkspaceID": {
+				"type": "string",
+				"defaultValue": "4b9f74b5-d329-4073-a389-3dae88a03a53"
+			},
+			"DatasetID": {
+				"type": "string",
+				"defaultValue": "801c4969-259b-4e6f-b02e-01f651d5780c"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-25T15:57:52Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

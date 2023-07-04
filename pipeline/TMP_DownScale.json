@@ -1,0 +1,44 @@
+{
+	"name": "TMP_DownScale",
+	"properties": {
+		"activities": [
+			{
+				"name": "DownScale SQL DWH",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://management.azure.com/subscriptions/81c0a8d3-231c-4899-b0f1-6f41609b9a25/resourceGroups/AlpaRG/providers/Microsoft.Sql/servers/alpa/databases/alpa_dwh?api-version=2021-02-01-preview",
+					"method": "PUT",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"sku": {
+							"name": "S0",
+							"tier": "Standard"
+						},
+						"location": "West Europe"
+					},
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://management.azure.com/"
+					}
+				}
+			}
+		],
+		"folder": {
+			"name": "Scalling"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-13T05:52:43Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

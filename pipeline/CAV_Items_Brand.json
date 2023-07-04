@@ -1,0 +1,71 @@
+{
+	"name": "CAV_Items_Brand",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy CAV_Items_Brand",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false,
+							"fileFilter": "s"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "TRUNCATE TABLE [MRR_CAV_Items_Brands]",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "CAV_dim",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": "ASCSVKGROUP.CSV"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "MRR_CAV_Items_Brands",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Items/CAV"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-15T09:59:31Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

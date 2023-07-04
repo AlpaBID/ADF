@@ -1,0 +1,166 @@
+{
+	"name": "Prio_Agents",
+	"properties": {
+		"activities": [
+			{
+				"name": "Prio_Agents",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "/*\n1-desig\n2-tous\n*/\n-------------------------------------------------1-desig------------------------------------------------\n\t\n\tSELECT \n\t'1' as 'EntityID'\n\t\t,CAST('1' AS varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, a.AGENT))AS varchar) AS 'AgentKey'\n\t\t,a.AGENTCODE AS 'מספר סוכן'\n\t\t,CASE \n\t\t\tWHEN a.AGENT <> 0\n\t\t\t\tTHEN a.AGENTNAME\n\t\t\tELSE 'Missing Agent\\ללא סוכן'\n\t\t\tEND AS 'סוכן'\n\t\t,CASE \n\t\t\tWHEN ma.AGENT = 0\n\t\t\t\tTHEN NULL\n\t\t\tELSE ma.AGENT\n\t\t\tEND AS 'ManagerAgentKey'\n\t\t,CASE \n\t\t\tWHEN ma.AGENT = 0\n\t\t\t\tTHEN 'Missing Manager\\ללא מנהל'\n\t\t\tELSE ma.AGENTNAME\n\t\t\tEND AS 'מנהל'\n\t\t,NULL AS 'PBIUser' ----2.1\n\t\n\t\t,GETDATE() AS RowInsertDatetime\n\tFROM [desig].[dbo].AGENTS a\n\tLEFT JOIN [desig].[dbo].AGENTS ma ON a.MAGENT = ma.AGENT ----1.1\n\t\t\n\tWHERE 1 = 1\n\n-------------------------------------------------2-tous------------------------------------------------\nunion all\n\n\tSELECT \n\t'2' as 'EntityID'\n\t\t,CAST('2' AS varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, a.AGENT))AS varchar) AS 'AgentKey'\n\t\t,a.AGENTCODE AS 'מספר סוכן'\n\t\t,CASE \n\t\t\tWHEN a.AGENT <> 0\n\t\t\t\tTHEN a.AGENTNAME\n\t\t\tELSE 'Missing Agent\\ללא סוכן'\n\t\t\tEND AS 'סוכן'\n\t\t,CASE \n\t\t\tWHEN ma.AGENT = 0\n\t\t\t\tTHEN NULL\n\t\t\tELSE ma.AGENT\n\t\t\tEND AS 'ManagerAgentKey'\n\t\t,CASE \n\t\t\tWHEN ma.AGENT = 0\n\t\t\t\tTHEN 'Missing Manager\\ללא מנהל'\n\t\t\tELSE ma.AGENTNAME\n\t\t\tEND AS 'מנהל'\n\t\t,NULL AS 'PBIUser' ----2.1\n\t\n\t\t,GETDATE() AS RowInsertDatetime\n\tFROM [tous].[dbo].AGENTS a\n\tLEFT JOIN [tous].[dbo].AGENTS ma ON a.MAGENT = ma.AGENT ----1.1",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "TRUNCATE TABLE [MRR_Prio_Agents]",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "AgentKey",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "AgentKey",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "מספר סוכן",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מספר סוכן",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "סוכן",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "סוכן",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ManagerAgentKey",
+									"type": "Int64",
+									"physicalType": "bigint"
+								},
+								"sink": {
+									"name": "ManagerAgentKey",
+									"type": "Int64",
+									"physicalType": "Int64"
+								}
+							},
+							{
+								"source": {
+									"name": "מנהל",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מנהל",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "PBIUser",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "PBIUser",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "RowInsertDatetime",
+									"type": "DateTime",
+									"physicalType": "datetime"
+								},
+								"sink": {
+									"name": "RowInsertDatetime",
+									"type": "DateTime",
+									"physicalType": "DateTime"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Source_Priority",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "[dbo].PART"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DWH_Dynamic",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "MRR_Prio_Agents"
+						}
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Agents/Priority"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-15T09:59:31Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

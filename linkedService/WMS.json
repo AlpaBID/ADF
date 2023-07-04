@@ -1,0 +1,17 @@
+{
+	"name": "WMS",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"connectionString": "integrated security=True;data source=10.0.0.35;initial catalog=SCEXPERT",
+			"userName": "ALPA\\excelando",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI0ODdlMTg3OC00NGY3LTQyMWYtOGU5Zi1iMThjYmU4ZDkyYzciLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "ALPANEW",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

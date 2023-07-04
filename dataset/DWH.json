@@ -1,0 +1,17 @@
+{
+	"name": "DWH",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dwh",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "DWH_Daily_Sales"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

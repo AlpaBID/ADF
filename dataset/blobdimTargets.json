@@ -1,0 +1,27 @@
+{
+	"name": "blobdimTargets",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "alpablob",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Blob"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"container": "dims"
+			},
+			"columnDelimiter": "\t",
+			"encodingName": "WINDOWS-1255",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": ""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

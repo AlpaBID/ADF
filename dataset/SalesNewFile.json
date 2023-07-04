@@ -1,0 +1,101 @@
+{
+	"name": "SalesNewFile",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "FileServer_cav",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Cav Files For Daily"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation",
+				"fileName": "ASCSVKCSTKINV.CSV",
+				"folderPath": "CAV"
+			},
+			"columnDelimiter": ",",
+			"encodingName": "WINDOWS-1255",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "MR",
+				"type": "String"
+			},
+			{
+				"name": "FY",
+				"type": "String"
+			},
+			{
+				"name": "INVOICE",
+				"type": "String"
+			},
+			{
+				"name": "AGENTPRIVATE",
+				"type": "String"
+			},
+			{
+				"name": "CUSTOMER",
+				"type": "String"
+			},
+			{
+				"name": "DISCOUNTPERCENT",
+				"type": "String"
+			},
+			{
+				"name": "DISCOUNTSUM",
+				"type": "String"
+			},
+			{
+				"name": "GROSS",
+				"type": "String"
+			},
+			{
+				"name": "INVDATE",
+				"type": "String"
+			},
+			{
+				"name": "SALEDISCOUNT",
+				"type": "String"
+			},
+			{
+				"name": "SECONDDRIVER",
+				"type": "String"
+			},
+			{
+				"name": "STORE",
+				"type": "String"
+			},
+			{
+				"name": "TOTALDUESUM",
+				"type": "String"
+			},
+			{
+				"name": "TRADEDISCOUNTS",
+				"type": "String"
+			},
+			{
+				"name": "VAT",
+				"type": "String"
+			},
+			{
+				"name": "AGENT",
+				"type": "String"
+			},
+			{
+				"name": "DISCOUNTS",
+				"type": "String"
+			},
+			{
+				"name": "EXTRADISCOUNTS",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

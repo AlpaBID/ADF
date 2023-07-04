@@ -1,0 +1,106 @@
+{
+	"name": "RLS_Cosmetics",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy RLS_Cosmetics",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ExcelSource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false,
+							"fileFilter": "RLS_Cosmetics.xlsx"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "truncate table MRR_RLS_Cosmetics",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "חטיבה",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "חטיבה",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "PBIUser",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "PBIUser",
+									"type": "String",
+									"physicalType": "String"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "CAV_RLS",
+						"type": "DatasetReference",
+						"parameters": {
+							"filename": "RLS_Cosmetics.xlsx"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "RLS_Cosmetics",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "RLS/RLS"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-21T12:32:41Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

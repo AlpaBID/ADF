@@ -1,0 +1,444 @@
+{
+	"name": "Agents Main Run",
+	"properties": {
+		"activities": [
+			{
+				"name": "sp_DWH_DimAgents",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Copy_CAV_Agents",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Copy_Prio_Agents",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[sp_DWH_DimAgents]"
+				},
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Copy_RLS_Cosmetics",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ExcelSource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false,
+							"fileFilter": "RLS_Cosmetics.xlsx"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "truncate table MRR_RLS_Cosmetics",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "חטיבה",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "חטיבה",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "PBIUser",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "PBIUser",
+									"type": "String",
+									"physicalType": "String"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "CAV_RLS",
+						"type": "DatasetReference",
+						"parameters": {
+							"filename": "RLS_Cosmetics.xlsx"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "RLS_Cosmetics",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "Copy_CAV_Agents",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Copy_RLS_Cosmetics",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": true,
+							"modifiedDatetimeStart": {
+								"value": "@getPastTime(24,'Hour')",
+								"type": "Expression"
+							},
+							"enablePartitionDiscovery": false,
+							"fileFilter": "ASCSVKTABLE.CSV"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "TRUNCATE TABLE [MRR_CAV_Agents]",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "MR",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "MR",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "TB",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "TB",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "KOD",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "KOD",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "PIC1",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "PIC1",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "PIC2",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "PIC2",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "PIC3",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "PIC3",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "PIC4",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "PIC4",
+									"type": "String",
+									"physicalType": "String"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "CAV",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "MRR_CAV_Agents",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "Copy_Prio_Agents",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "/*\n1-desig\n2-tous\n*/\n-------------------------------------------------1-desig------------------------------------------------\n\t\n\tSELECT \n\t'1' as 'EntityID'\n\t\t,CAST('1' AS varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, a.AGENT))AS varchar) AS 'AgentKey'\n\t\t,a.AGENTCODE AS 'מספר סוכן'\n\t\t,CASE \n\t\t\tWHEN a.AGENT <> 0\n\t\t\t\tTHEN a.AGENTNAME\n\t\t\tELSE 'Missing Agent\\ללא סוכן'\n\t\t\tEND AS 'סוכן'\n\t\t,CASE \n\t\t\tWHEN ma.AGENT = 0\n\t\t\t\tTHEN NULL\n\t\t\tELSE ma.AGENT\n\t\t\tEND AS 'ManagerAgentKey'\n\t\t,CASE \n\t\t\tWHEN ma.AGENT = 0\n\t\t\t\tTHEN 'Missing Manager\\ללא מנהל'\n\t\t\tELSE ma.AGENTNAME\n\t\t\tEND AS 'מנהל'\n\t\t,NULL AS 'PBIUser' ----2.1\n\t\n\t\t,GETDATE() AS RowInsertDatetime\n\tFROM [desig].[dbo].AGENTS a\n\tLEFT JOIN [desig].[dbo].AGENTS ma ON a.MAGENT = ma.AGENT ----1.1\n\t\t\n\tWHERE 1 = 1\n\n-------------------------------------------------2-tous------------------------------------------------\nunion all\n\n\tSELECT \n\t'2' as 'EntityID'\n\t\t,CAST('2' AS varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, a.AGENT))AS varchar) AS 'AgentKey'\n\t\t,a.AGENTCODE AS 'מספר סוכן'\n\t\t,CASE \n\t\t\tWHEN a.AGENT <> 0\n\t\t\t\tTHEN a.AGENTNAME\n\t\t\tELSE 'Missing Agent\\ללא סוכן'\n\t\t\tEND AS 'סוכן'\n\t\t,CASE \n\t\t\tWHEN ma.AGENT = 0\n\t\t\t\tTHEN NULL\n\t\t\tELSE ma.AGENT\n\t\t\tEND AS 'ManagerAgentKey'\n\t\t,CASE \n\t\t\tWHEN ma.AGENT = 0\n\t\t\t\tTHEN 'Missing Manager\\ללא מנהל'\n\t\t\tELSE ma.AGENTNAME\n\t\t\tEND AS 'מנהל'\n\t\t,NULL AS 'PBIUser' ----2.1\n\t\n\t\t,GETDATE() AS RowInsertDatetime\n\tFROM [tous].[dbo].AGENTS a\n\tLEFT JOIN [tous].[dbo].AGENTS ma ON a.MAGENT = ma.AGENT ----1.1",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "TRUNCATE TABLE [MRR_Prio_Agents]",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "AgentKey",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "AgentKey",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "מספר סוכן",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מספר סוכן",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "סוכן",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "סוכן",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ManagerAgentKey",
+									"type": "Int64",
+									"physicalType": "bigint"
+								},
+								"sink": {
+									"name": "ManagerAgentKey",
+									"type": "Int64",
+									"physicalType": "Int64"
+								}
+							},
+							{
+								"source": {
+									"name": "מנהל",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מנהל",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "PBIUser",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "PBIUser",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "RowInsertDatetime",
+									"type": "DateTime",
+									"physicalType": "datetime"
+								},
+								"sink": {
+									"name": "RowInsertDatetime",
+									"type": "DateTime",
+									"physicalType": "DateTime"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Source_Priority",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "[dbo].PART"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DWH_Dynamic",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "MRR_Prio_Agents"
+						}
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Agents"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-22T07:56:07Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

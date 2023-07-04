@@ -1,0 +1,268 @@
+{
+	"name": "Daily Run",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy Data",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.00:30:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "\n\nSET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;\n/*\n1-desig\n2-tous\n*/\n-------------------------------------------------1-desig------------------------------------------------\nSELECT \n\n'1' as 'EntityID'\n          ,pt.TRANSACTNUM AS 'חשבונית'\n\t\t--,ii.KLINE AS 'InvoiceLineNumber'\n\t\t,'POS' AS 'DocName'\n\t\t,CAST('1' as varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, pt.CUST)) as varchar)   AS 'AccountKey' \n\n\t\t--choose one of the above , The defauls is uncomment :\n\t\t,CONVERT(SMALLDATETIME, (pt.CURDATE + 46283040) / 1440.0) AS 'Date' -- Invoice date  -- Date from Invoices in case you need just invoices \n\n\t\t,pt.CURTIME/60 AS 'Time'\n\n\t\t,CAST('1' as varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, pti.POS_USERBSALE)) as varchar) AS 'AgentKey' -- the sales representor\n\n\t\t,CAST('1' as varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, pti.PART)) as varchar) AS 'ItemKey'\n\n\n\n\t\t,CAST('1' as varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, pt.BRANCH)) as varchar) AS 'BranchKey'\n\t--\t,null as 'EmployeeKey'\n\t\t--,pti.CLUB as 'חבר מועדון'\n\n\t\t--,(1 - (1 - ii.[T$PERCENT] / 100) * (1 - i.[T$PERCENT] / 100)) AS 'DiscountPercent' -- the DiscountPercent for the invoice and invoice line\n\n\t\t,ROUND((1-(1-(pti.T$PERCENT/100))*(1-(pti.GENDISCPERC/100)))*(pti.PRICE*(pti.QUANT/1000))/(1+(pti.VATPERCENT/100)),2) AS 'LineTotalDiscount' -- the discount from gross price to the net\n\t\t,ROUND((1-(1-(pti.T$PERCENT/100))*(1-(pti.GENDISCPERC/100)))*(pti.PRICE*(pti.QUANT/1000)),2) as 'LineTotalDiscountVAT'\n\t\t--,ROUND(ii.PRICE, 2) * ii.IEXCHANGE AS 'UnitGrossPrice'\n\t\t,ROUND(pti.PRICE/(1+(pti.VATPERCENT/100)),2) AS 'UnitNetPrice'\n\t\t,pti.PRICE as 'UnitPriceVAT'\n\n\t\t,(pti.QUANT/1000.0) AS 'Quantity'\n\t--\t,null as 'factoryQuantity'\n\t--\t,null AS 'LineTotalCost' \n\t\t,(1-(pti.T$PERCENT/100))*(1-(pti.GENDISCPERC/100))*(pti.PRICE/(1+(pti.VATPERCENT/100))*(pti.QUANT/1000.0)) AS 'LineTotalNet'\n\t\t--ROUND((pti.IPRICEADISCOUNTBVAT*(pti.QUANT/1000)),2) AS 'LineTotalNet'\n\n\t--    ,null AS 'LineTotalNet_USD'\n\t\t,ROUND((pti.IPRICEADISCOUNTBVAT*(pti.QUANT/1000.0)*(1+(pti.VATPERCENT/100))),2) AS 'LineTotalNetVAT'\n\t--\t,null AS 'LineTotalNetVAT_USD'\n\t\t,CONVERT(INT, LEFT(CONVERT(VARCHAR, CONVERT(DATETIME, (i.IVDATE + 46283040) / 1440.0), 112), 6)) AS YearMonth\n\t\t--,null as 'סטטוס'\n\t\t--,null  as 'ChargeFlag'  \n\t\t--,null as 'סטטוס ליקוט כותרת'\n\t --   ,null  as 'סטטוס ליקוט שורה'\n\t\t--,null  as 'דגל סטורנו'\n\t--\t,GETDATE() AS RowInsertDatetime\n\n\nfrom [desig].[dbo].POS_TRANSACTIONS pt \nleft join  [desig].[dbo].POS_TRANSACTITEMS pti on pti.TRANSACT=pt.TRANSACT\nleft join [desig].[dbo].PART p on p.PART=pti.PART\n--left join [desig].[dbo].Costs cost on cost.CURDATE=pt.CURDATE and cost.ItemID=pti.PART\nleft join [desig].[dbo].INVOICES i on i.IV=pti.IV\n\t\t\t\nWHERE 1=1 \nAND (pt.CURDATE <> 51852960 and CONVERT(SMALLDATETIME, (pt.CURDATE + 46283040) / 1440.0) = cast (GETDATE() as date))\n--and pti.PART <> ''\n-------------------------------------------------2-tous------------------------------------------------\nunion all\n\nSELECT \n\n'2' as 'EntityID'\n          ,pt.TRANSACTNUM AS 'חשבונית'\n\t\t--,ii.KLINE AS 'InvoiceLineNumber'\n\t\t,'POS' AS 'DocName'\n\t\t,CAST('2' as varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, pt.CUST)) as varchar)   AS 'AccountKey' \n\n\t\t--choose one of the above , The defauls is uncomment :\n\t\t,CONVERT(SMALLDATETIME, (pt.CURDATE + 46283040) / 1440.0) AS 'Date' -- Invoice date  -- Date from Invoices in case you need just invoices \n\n\t\t,pt.CURTIME/60 AS 'Time'\n\n\t\t,CAST('2' as varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, pti.POS_USERBSALE)) as varchar) AS 'AgentKey' -- the sales representor\n\n\t\t,CAST('2' as varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, pti.PART)) as varchar) AS 'ItemKey'\n\n\n\n\t\t,CAST('2' as varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, pt.BRANCH)) as varchar) AS 'BranchKey'\n\t\t--,null as 'EmployeeKey'\n\t\t--,null as 'חבר מועדון'\n\n\t\t--,(1 - (1 - ii.[T$PERCENT] / 100) * (1 - i.[T$PERCENT] / 100)) AS 'DiscountPercent' -- the DiscountPercent for the invoice and invoice line\n\n\t\t,ROUND((1-(1-(pti.T$PERCENT/100))*(1-(pti.GENDISCPERC/100)))*(pti.PRICE*(pti.QUANT/1000))/(1+(pti.VATPERCENT/100)),2) AS 'LineTotalDiscount' -- the discount from gross price to the net\n\t\t,ROUND((1-(1-(pti.T$PERCENT/100))*(1-(pti.GENDISCPERC/100)))*(pti.PRICE*(pti.QUANT/1000)),2) as 'LineTotalDiscountVAT'\n\t\t--,ROUND(ii.PRICE, 2) * ii.IEXCHANGE AS 'UnitGrossPrice'\n\t\t,ROUND(pti.PRICE/(1+(pti.VATPERCENT/100)),2) AS 'UnitNetPrice'\n\t\t,pti.PRICE as 'UnitPriceVAT'\n\n\t\t,(pti.QUANT/1000.0) AS 'Quantity'\n\t\t--,null as 'factoryQuantity'\n\t\t--,null AS 'LineTotalCost' \n\t\t,(1-(pti.T$PERCENT/100))*(1-(pti.GENDISCPERC/100))*(pti.PRICE/(1+(pti.VATPERCENT/100))*(pti.QUANT/1000.0)) AS 'LineTotalNet'\n\t\t--ROUND((pti.IPRICEADISCOUNTBVAT*(pti.QUANT/1000)),2) AS 'LineTotalNet'\n\n\t  --  ,null AS 'LineTotalNet_USD'\n\t\t,ROUND((pti.IPRICEADISCOUNTBVAT*(pti.QUANT/1000.0)*(1+(pti.VATPERCENT/100))),2) AS 'LineTotalNetVAT'\n\t\t--,null AS 'LineTotalNetVAT_USD'\n\t\t,CONVERT(INT, LEFT(CONVERT(VARCHAR, CONVERT(DATETIME, (i.IVDATE + 46283040) / 1440.0), 112), 6)) AS YearMonth\n\t\t--,null as 'סטטוס'\n\t\t--,null  as 'ChargeFlag'  \n\t\t--,null as 'סטטוס ליקוט כותרת'\n\t   -- ,null  as 'סטטוס ליקוט שורה'\n\t\t--,null  as 'דגל סטורנו'\n\t\t--,GETDATE() AS RowInsertDatetime\n\n\n\nfrom [tous].[dbo].POS_TRANSACTIONS pt \nleft join  [tous].[dbo].POS_TRANSACTITEMS pti on pti.TRANSACT=pt.TRANSACT\nleft join [tous].[dbo].PART p on p.PART=pti.PART\n--left join [tous].[dbo].Costs cost on cost.CURDATE=pt.CURDATE and cost.ItemID=pti.PART\nleft join [tous].[dbo].INVOICES i on i.IV=pti.IV\n\t\t\t\nWHERE 1=1 \nAND CONVERT(SMALLDATETIME, (pt.CURDATE + 46283040) / 1440.0) = cast (GETDATE() as date)\n--and pti.PART <> ''",
+						"queryTimeout": "00:30:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "Truncate Table \nDWH_Daily_Sales",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "חשבונית",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "TRANSACTNUM",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "DocName",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "DocName",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "AccountKey",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "AccountKey",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Date",
+									"type": "DateTime",
+									"physicalType": "smalldatetime"
+								},
+								"sink": {
+									"name": "Date",
+									"type": "DateTime",
+									"physicalType": "date"
+								}
+							},
+							{
+								"source": {
+									"name": "Time",
+									"type": "Int64",
+									"physicalType": "bigint"
+								},
+								"sink": {
+									"name": "Time",
+									"type": "Int64",
+									"physicalType": "bigint"
+								}
+							},
+							{
+								"source": {
+									"name": "AgentKey",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "AgentKey",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "ItemKey",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "ItemKey",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "BranchKey",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "BranchKey",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "LineTotalDiscount",
+									"type": "Double",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "LineTotalDiscount",
+									"type": "Decimal",
+									"physicalType": "decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "LineTotalDiscountVAT",
+									"type": "Double",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "LineTotalDiscountVAT",
+									"type": "Decimal",
+									"physicalType": "decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "UnitNetPrice",
+									"type": "Double",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "UnitNetPrice",
+									"type": "Decimal",
+									"physicalType": "decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "UnitPriceVAT",
+									"type": "Double",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "UnitPriceVAT",
+									"type": "Decimal",
+									"physicalType": "decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "Quantity",
+									"physicalType": "decimal"
+								},
+								"sink": {
+									"name": "Quantity",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "LineTotalNet",
+									"type": "Double",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "LineTotalNet",
+									"type": "Decimal",
+									"physicalType": "decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "LineTotalNetVAT",
+									"type": "Double",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "LineTotalNetVAT",
+									"type": "Decimal",
+									"physicalType": "decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "YearMonth",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "YearMonth",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": false,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Source_Priority",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "[dbo].POS_TRANSACTIONS"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DWH",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Daily Run"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-14T15:06:16Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

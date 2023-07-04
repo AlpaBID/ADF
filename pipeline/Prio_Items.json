@@ -1,0 +1,563 @@
+{
+	"name": "Prio_Items",
+	"properties": {
+		"activities": [
+			{
+				"name": "Prio_Items",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;\n\n/*\n1-desig\n2-tous\n*/\n-------------------------------------------------1-desig------------------------------------------------\nselect DISTINCT \n\t'1' as 'EntityID'\n\t\t,CAST('1' as varchar) +CAST( CONVERT(BIGINT, CONVERT(VARCHAR, p.PART)) as varchar) AS 'ItemKey'\n\t\t,p.PARTNAME AS 'מקט'\n\t\t--,p.PARTDES AS 'שם מוצר'\n\t\t,system.dbo.tabula_hebconvert(p.PARTDES) AS 'שם מוצר'\n\t\t--,p.PARTNAME + ' | ' + p.PARTDES AS 'מזהה מוצר'\n\t\t,p.PARTNAME + ' | ' + system.dbo.tabula_hebconvert(p.PARTDES) AS 'מזהה מוצר'\n\n\t\t,p2.PARTNAME AS 'מקט מרכז'\n\t\t,system.dbo.tabula_hebconvert(p2.PARTDES) AS 'שם מוצר מרכז'\n\t\t,p2.PARTNAME + ' | ' + system.dbo.tabula_hebconvert(p2.PARTDES) AS 'מזהה מוצר מרכז'\n\n\t\t,f.FAMILYNAME AS 'קוד קטגוריה' -- Product Category Code\n\t\t,system.dbo.tabula_hebconvert(f.FAMILYDES) AS 'קטגוריה' -- Product Category Name\n\t\t,system.dbo.tabula_hebconvert(ft.FTNAME) AS 'משפחה'\n\t\t----2.2\n\t\t--,ps.STATDES AS 'סטטוס'\n\t\t,ps.SPEC1 AS 'פרמטר 1'\n\t\t,ps.SPECDES1 AS 'שם פרמטר 1' ----Choose your Client preffer specdes number\n\t\t,system.dbo.tabula_hebconvert(ps.SPEC2) AS 'פרמטר 2'\n\t\t,ps.SPECDES2 AS 'שם פרמטר 2' ----Choose your Client preffer specdes number\n\t\t,ps.SPEC3 AS 'פרמטר 3' ------ SIZE\n\t\t,ps.SPECDES3 AS 'שם פרמטר 3' ----Choose your Client preffer specdes number\n\t\t,ps.SPEC3 AS 'פרמטר 4'\n\t\t,ps.SPECDES3 AS 'שם פרמטר 4' ----Choose your Client preffer specdes number\n\t\t,ps.SPEC4 AS 'פרמטר 5'\n\t\t,ps.SPECDES4 AS 'שם פרמטר 5' ----Choose your Client preffer specdes number\n\t\t,null AS 'פרמטר 12'\n\t    ,ps.SPEC15 AS 'פרמטר 15'\n\t\t,system.dbo.tabula_hebconvert(SPECDES15) AS 'שם פרמטר 15' \n\t\t,p.COST AS 'עלות'\n\t\t,system.dbo.tabula_hebconvert(ps.SPEC6) AS 'מותג'\n\t\t,system.dbo.tabula_hebconvert(ps.SPEC8) AS 'מגדר'\n\t\t,system.dbo.tabula_hebconvert(ps.SPEC2) AS 'צבע'\n\t\t,system.dbo.tabula_hebconvert(ps.SPEC11) AS 'עונה'\n        ,system.dbo.tabula_hebconvert(ps.SPEC17) AS 'קולקציה'\n\t\t,system.dbo.tabula_hebconvert(ps.SPEC10) AS 'גזרה'\n\t\t,NULL AS 'InventoryItem' -- if the item has inventory in warhouses , from master food\n\t\t,null AS 'גיל מלאי'\n\t\t,null AS 'מיון מלאי'\n\t\t,null AS 'תאריך כניסה אחרון למלאי'\n\t\t,NULL AS 'סוג ייבוא' -- if coming from local or imported \n\t\t,NULL AS 'יחידות מכירה' -- from UNIT Table \n\t\t,NULL AS 'גודל'\n\t\t,NULL AS 'משקל'\n\t\t,null as 'מנוהל מלאי'\n\t\t\n\t\t,GETDATE() AS RowInsertDatetime\n\n\nfrom [desig].[dbo].PART p \n\tleft join [desig].[dbo].FAMILY f on p.FAMILY=f.FAMILY\n\tleft join [desig].[dbo].FAMILYTYPES ft on f.FAMILYTYPE=ft.FAMILYTYPE\n\tleft join [desig].[dbo].PARTSPEC ps on p.PART=ps.PART\n\tleft join [desig].[dbo].PART p2 on p.MPART=p2.PART\n\tinner join (\n\tselect\n\tpti.PART\n\t,max(convert(smalldatetime, (pt.CURDATE + pt.CURTIME + 46283040) / 1440.0)) as 'DateTime'\n\tfrom [desig].[dbo].POS_TRANSACTIONS pt\n\tleft join [desig].[dbo].POS_TRANSACTITEMS pti on pti.TRANSACT=pt.TRANSACT\n\twhere 1=1\n\tand (pt.CURDATE <> 51852960 and convert(smalldatetime, (pt.CURDATE + 46283040) / 1440.0) >= DATEADD(Year,-3,DATEADD(yy, DATEDIFF(yy, 0, GETDATE()), 0)))\n\tand pti.IPRICEADISCOUNTBVAT<>0\n\tgroup by pti.PART\n\t) pti on pti.PART=p.PART\n\n\twhere 1=1\n\n\t\n\n-------------------------------------------------2-tous------------------------------------------------\nunion all\nselect DISTINCT \n\t'2' as 'EntityID'\n\t\t,CAST('2' as varchar) +CAST( CONVERT(BIGINT, CONVERT(VARCHAR, p.PART)) as varchar) AS 'ItemKey'\n\t\t,p.PARTNAME AS 'מקט'\n\t\t--,p.PARTDES AS 'שם מוצר'\n\t\t,system.dbo.tabula_hebconvert(p.PARTDES) AS 'שם מוצר'\n\t\t--,p.PARTNAME + ' | ' + p.PARTDES AS 'מזהה מוצר'\n\t\t,p.PARTNAME + ' | ' + system.dbo.tabula_hebconvert(p.PARTDES) AS 'מזהה מוצר'\n\n\t\t,p2.PARTNAME AS 'מקט מרכז'\n\t\t,system.dbo.tabula_hebconvert(p2.PARTDES) AS 'שם מוצר מרכז'\n\t\t,p2.PARTNAME + ' | ' + system.dbo.tabula_hebconvert(p2.PARTDES) AS 'מזהה מוצר מרכז'\n\n\t\t,f.FAMILYNAME AS 'קוד קטגוריה' -- Product Category Code\n\t\t,system.dbo.tabula_hebconvert(f.FAMILYDES) AS 'קטגוריה' -- Product Category Name\n\n\t\t--,ft.FTNAME AS 'משפחה'\n\t\t,system.dbo.tabula_hebconvert(ps.SPEC11) AS 'משפחה'\n\t\t----2.2\n\t\t--,ps.STATDES AS 'סטטוס'\n\t\t,ps.SPEC1 AS 'פרמטר 1'\n\t\t,ps.SPECDES1 AS 'שם פרמטר 1' ----Choose your Client preffer specdes number\n\t\t,system.dbo.tabula_hebconvert(ps.SPEC2) AS 'פרמטר 2'\n\t\t,ps.SPECDES2 AS 'שם פרמטר 2' ----Choose your Client preffer specdes number\n\t\t,ps.SPEC3 AS 'פרמטר 3' ------ SIZE\n\t\t,ps.SPECDES3 AS 'שם פרמטר 3' ----Choose your Client preffer specdes number\n\t\t,ps.SPEC3 AS 'פרמטר 4'\n\t\t,ps.SPECDES3 AS 'שם פרמטר 4' ----Choose your Client preffer specdes number\n\t\t,ps.SPEC4 AS 'פרמטר 5'\n\t\t,ps.SPECDES4 AS 'שם פרמטר 5' ----Choose your Client preffer specdes number\n\t\t,null AS 'פרמטר 12'\n\t    ,ps.SPEC15 AS 'פרמטר 15'\n\t\t,system.dbo.tabula_hebconvert(SPECDES15) AS 'שם פרמטר 15' \n\t\t,p.COST AS 'עלות'\n\t\t--,system.dbo.tabula_hebconvert(ps.SPEC6) AS 'מותג'\n\t\t,'Tous' AS 'מותג'\n\t\t,system.dbo.tabula_hebconvert(ps.SPEC8) AS 'מגדר'\n\t\t,system.dbo.tabula_hebconvert(ps.SPEC2) AS 'צבע'\n\t\t,system.dbo.tabula_hebconvert(ps.SPEC11) AS 'עונה'\n        ,system.dbo.tabula_hebconvert(ps.SPEC17) AS 'קולקציה'\n\t\t,system.dbo.tabula_hebconvert(ps.SPEC10) AS 'גזרה'\n\t\t,NULL AS 'InventoryItem' -- if the item has inventory in warhouses , from master food\n\t\t,null AS 'גיל מלאי'\n\t\t,null AS 'מיון מלאי'\n\t\t,null AS 'תאריך כניסה אחרון למלאי'\n\t\t,NULL AS 'סוג ייבוא' -- if coming from local or imported \n\t\t,NULL AS 'יחידות מכירה' -- from UNIT Table \n\t\t,NULL AS 'גודל'\n\t\t,NULL AS 'משקל'\n\t\t,null as 'מנוהל מלאי'\n\t\t\n\t\t,GETDATE() AS RowInsertDatetime\n\n\n\n\n\n\nfrom [tous].[dbo].PART p \n\tleft join [tous].[dbo].FAMILY f on p.FAMILY=f.FAMILY\n\tleft join [tous].[dbo].FAMILYTYPES ft on f.FAMILYTYPE=ft.FAMILYTYPE\n\tleft join [tous].[dbo].PARTSPEC ps on p.PART=ps.PART\n\tleft join [tous].[dbo].PART p2 on p.MPART=p2.PART\n\tinner join (\n\tselect\n\tpti.PART\n\t,max(convert(smalldatetime, (pt.CURDATE + pt.CURTIME + 46283040) / 1440.0)) as 'DateTime'\n\tfrom [tous].[dbo].POS_TRANSACTIONS pt\n\tleft join [tous].[dbo].POS_TRANSACTITEMS pti on pti.TRANSACT=pt.TRANSACT\n\twhere convert(smalldatetime, (pt.CURDATE + 46283040) / 1440.0) >= DATEADD(Year,-3,DATEADD(yy, DATEDIFF(yy, 0, GETDATE()), 0))\n\tand pti.IPRICEADISCOUNTBVAT<>0\n\tgroup by pti.PART\n\t) pti on pti.PART=p.PART",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "TRUNCATE TABLE [MRR_Prio_Items]",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"tableOption": "autoCreate",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ItemKey",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "ItemKey",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "מקט",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מקט",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "שם מוצר",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "שם מוצר",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "מזהה מוצר",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מזהה מוצר",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "מקט מרכז",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מקט מרכז",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "שם מוצר מרכז",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "שם מוצר מרכז",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "מזהה מוצר מרכז",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מזהה מוצר מרכז",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "קוד קטגוריה",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "קוד קטגוריה",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "קטגוריה",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "קטגוריה",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "משפחה",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "משפחה",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "פרמטר 1",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "פרמטר 1",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "שם פרמטר 1",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "שם פרמטר 1",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "פרמטר 2",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "פרמטר 2",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "שם פרמטר 2",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "שם פרמטר 2",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "פרמטר 3",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "פרמטר 3",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "שם פרמטר 3",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "שם פרמטר 3",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "פרמטר 4",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "פרמטר 4",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "שם פרמטר 4",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "שם פרמטר 4",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "פרמטר 5",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "פרמטר 5",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "שם פרמטר 5",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "שם פרמטר 5",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "פרמטר 12",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "פרמטר 12",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "פרמטר 15",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "פרמטר 15",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "שם פרמטר 15",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "שם פרמטר 15",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "עלות",
+									"type": "Double",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "עלות",
+									"type": "Double",
+									"physicalType": "Double"
+								}
+							},
+							{
+								"source": {
+									"name": "מותג",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מותג",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "מגדר",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מגדר",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "צבע",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "צבע",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "עונה",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "עונה",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "קולקציה",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "קולקציה",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "גזרה",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "גזרה",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "InventoryItem",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "InventoryItem",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "גיל מלאי",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "גיל מלאי",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "מיון מלאי",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "מיון מלאי",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "תאריך כניסה אחרון למלאי",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "תאריך כניסה אחרון למלאי",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "סוג ייבוא",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "סוג ייבוא",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "יחידות מכירה",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "יחידות מכירה",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "גודל",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "גודל",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "משקל",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "משקל",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "מנוהל מלאי",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "מנוהל מלאי",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "RowInsertDatetime",
+									"type": "DateTime",
+									"physicalType": "datetime"
+								},
+								"sink": {
+									"name": "RowInsertDatetime",
+									"type": "DateTime",
+									"physicalType": "DateTime"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Source_Priority",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "[dbo].PART"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DWH_Dynamic",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "MRR_Prio_Items"
+						}
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Items/Priority"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-15T09:59:31Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

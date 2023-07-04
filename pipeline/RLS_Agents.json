@@ -1,0 +1,142 @@
+{
+	"name": "RLS_Agents",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy RLS_Agents",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ExcelSource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false,
+							"fileFilter": "RLS_Agents.xlsx"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "truncate table MRR_RLS_Agents",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "סמ\" סוכן",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "סמ\" סוכן",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "BI_USER",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "BI_USER",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "שם סוכן",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "שם סוכן",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "שם מנהל",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "שם מנהל",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "חטיבה",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "חטיבה",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "יוזר מנהל",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "יוזר מנהל",
+									"type": "String",
+									"physicalType": "String"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "CAV_RLS",
+						"type": "DatasetReference",
+						"parameters": {
+							"filename": "RLS_Agents.xlsx"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "RLS_Agents",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "RLS/RLS"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-21T12:32:41Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

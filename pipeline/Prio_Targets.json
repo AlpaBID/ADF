@@ -1,0 +1,158 @@
+{
+	"name": "Prio_Targets",
+	"properties": {
+		"activities": [
+			{
+				"name": "MRR_Prio_Targets",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;\n\n/*\n1-desig\n2-tous\n*/\n-----------------------\nSELECT \n'1' as 'EntityID'\n,CAST('1' as varchar) + cast(CONVERT(INT, CONVERT(VARCHAR, pmt.BRANCH))as varchar) AS  'BranchKey'\n,pmt.YEARNUM as 'Year'\n,pmt.MONTHNUM as 'Month'\n,pmt.TARGETSUM as 'Target'\n\nFROM [desig].[dbo].POS_MONTHTARGETS pmt\nwhere \npmt.YEARNUM <> 0\n\nUnion all\n\nSELECT \n'2' as 'EntityID'\n,CAST('2' as varchar) + cast(CONVERT(INT, CONVERT(VARCHAR, pmt.BRANCH))as varchar) AS  'BranchKey'\n,pmt.YEARNUM as 'Year'\n,pmt.MONTHNUM as 'Month'\n,pmt.TARGETSUM as 'Target'\n\nFROM [tous].[dbo].POS_MONTHTARGETS pmt\nwhere \npmt.YEARNUM <> 0\n\n",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "TRUNCATE TABLE MRR_Prio_Targets",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"tableOption": "autoCreate",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "BranchKey",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "BranchKey",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Year",
+									"type": "Int64",
+									"physicalType": "bigint"
+								},
+								"sink": {
+									"name": "Year",
+									"type": "Int64",
+									"physicalType": "Int64"
+								}
+							},
+							{
+								"source": {
+									"name": "Month",
+									"type": "Int64",
+									"physicalType": "bigint"
+								},
+								"sink": {
+									"name": "Month",
+									"type": "Int64",
+									"physicalType": "Int64"
+								}
+							},
+							{
+								"source": {
+									"name": "Target",
+									"type": "Double",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "Target",
+									"type": "Double",
+									"physicalType": "Double"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Source_Priority",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "CUSTOMER"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DWH_Dynamic",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "MRR_Prio_Targets"
+						}
+					}
+				]
+			},
+			{
+				"name": "sp_DWH_FactTarget",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "MRR_Prio_Targets",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[sp_DWH_FactTarget]"
+				},
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"folder": {
+			"name": "Targets/Priority"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-27T13:21:11Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,39 @@
+{
+	"name": "Targets Main Run",
+	"properties": {
+		"activities": [
+			{
+				"name": "CAV_Targets",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "CAV_Targets",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Prio_Targets",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Prio_Targets",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "Targets"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-21T12:36:23Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,25 @@
+{
+	"name": "CAV_Targets",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "FileServer_SuperPharm",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Cav Source"
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"sheetName": "חודשי",
+			"location": {
+				"type": "FileServerLocation",
+				"fileName": "יעד חודשי מעודכן - Copy.xlsx",
+				"folderPath": "Target"
+			},
+			"firstRowAsHeader": true
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

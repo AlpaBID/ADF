@@ -1,0 +1,232 @@
+{
+	"name": "Inventory Main Run",
+	"properties": {
+		"activities": [
+			{
+				"name": "sp_DWH_FactInventory",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Copy_Prio_Inventory",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[sp_DWH_Fact_Inventory]"
+				},
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Copy_Prio_Inventory",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;\n/*\n1-desig\n2-tous\n*/\n-------------------------------------------------1-desig------------------------------------------------\t\n\n\nselect \n'1' as 'EntityID'\n--,'1' + Inv.ItemKey as 'ItemKey'\n--,CONCAT('1', Inv.ItemKey) as 'ItemKey'\n,cast('1' as varchar) + cast(Inv.ItemKey as varchar) as 'ItemKey'\n,cast(Inv.[Date] as date) as 'Date'\n,Inv.[TYPE] as 'Type'\n,Inv.[Status] as 'סטטוס'\n--,'1' + Inv.[WarehsKey] as 'WarehsKey'\n--,CONCAT('1' , Inv.[WarehsKey]) as 'WarehsKey'\n,CAST('1' as varchar) + cast( Inv.[WarehsKey] as varchar) as 'WarehsKey'\n--,'1' + Inv.[BranchKey] as 'BranchKey'\n--,Concat('1', Inv.[BranchKey]) as 'BranchKey'\n,CAST('1' as varchar) + cast(Inv.[BranchKey] as varchar) as 'BranchKey'\n,Inv.[CostperUnit]\n,SUM(Quantity) as 'Quantity'\n,SUM([Stock Value]) as 'StockValue'\n\n\n,Inv.[RowInsertDatetime]\nFROM\n(\n\t\t SELECT \n\t\tCONVERT(INT, CONVERT(VARCHAR, wb.PART)) AS 'ItemKey'\n\t\t,convert(smalldatetime, (wb.LASTDATE + 46283040) / 1440.0) AS 'Date'\n\t\t,ws.[TYPE] \t\n\t\t,c.CUSTNAME AS 'Status'\n\t\t,CONVERT(INT, CONVERT(VARCHAR, wb.WARHS)) AS 'WarehsKey'\n\t\t,CONVERT(INT, CONVERT(VARCHAR, ws.POS_BRANCH)) AS 'BranchKey' -- Only Retail with POS\n\t\t--,CONVERT(INT, CONVERT(VARCHAR, b.BRANCH)) AS 'BranchKey' -- Only Retail without POS\n\t\t,p.COST as 'CostperUnit'\n\t\t,(wb.BALANCE) / 1000.0 AS 'Quantity' \n\t\t,(wb.BALANCE) / 1000.0 * (p.COST) as 'Stock Value'\n\t\t\n\t\t,GETDATE() AS RowInsertDatetime\n\t\t--,wt.WARHSTYPENAME -- Only QA \n\t\t-- ,p.PARTNAME -- Only QA  \n\t\t--,ws.WARHSNAME -- Only QA\n\t\t--,w.WARHSDES  -- Only QA\n       FROM [desig].[dbo].WARHSBAL wb \n       Left join  [desig].[dbo].WAREHOUSES ws ON ws.WARHS = wb.WARHS \n       Left join  [desig].[dbo].CUSTOMERS c ON c.CUST = wb.CUST   \n       Left join  [desig].[dbo].PART p on wb.PART=p.PART \n\t   Left join  [desig].[dbo].BRANCHES b ON b.WARHS = wb.WARHS -- Only Retail without POS\n\t  -- left join [dbo].WARHSTYPE wt on wt.WARHSTYPE=w.WARHSTYPE -- Only QA\nWHERE  1 = 1\nand year(convert(smalldatetime, (wb.LASTDATE + 46283040) / 1440.0)) >= 2018\n       --and ws.WARHSNAME in ('Main', 'SV')  --QA Filter\n\t   --and p.PARTNAME='LL-1C' --QA Filter\n\t   --and convert(smalldatetime, (wb.LASTDATE + 46283040) / 1440.0)>='01/01/2016' --QA Filter\n)Inv\nGROUP BY\nInv.ItemKey\n,Inv.Date\n,Inv.TYPE\n,Inv.Status\n,Inv.WarehsKey\n,Inv.BranchKey\n,Inv.CostperUnit\n,Inv.RowInsertDatetime\n\n-------------------------------------------------2-tous------------------------------------------------\nunion all\n\nselect \n'2' as 'EntityID'\n--,'1' + Inv.ItemKey as 'ItemKey'\n--,CONCAT('1', Inv.ItemKey) as 'ItemKey'\n,cast('2' as varchar) + cast(Inv.ItemKey as varchar) as 'ItemKey'\n,cast(Inv.[Date] as date) as 'Date'\n,Inv.[TYPE] as 'Type'\n,Inv.[Status] as 'סטטוס'\n,CAST('2' as varchar) + cast( Inv.[WarehsKey] as varchar) as 'WarehsKey'\n,CAST('2' as varchar) + cast(Inv.[BranchKey] as varchar) as 'BranchKey'\n,Inv.[CostperUnit]\n,SUM(Quantity) as 'Quantity'\n,SUM([Stock Value]) as 'StockValue'\n\n\n,Inv.[RowInsertDatetime]\nFROM\n(\n\t\t SELECT \n\t\tCONVERT(INT, CONVERT(VARCHAR, wb.PART)) AS 'ItemKey'\n\t\t,convert(smalldatetime, (wb.LASTDATE + 46283040) / 1440.0) AS 'Date'\n\t\t,ws.[TYPE] \t\n\t\t,c.CUSTNAME AS 'Status'\n\t\t,CONVERT(INT, CONVERT(VARCHAR, wb.WARHS)) AS 'WarehsKey'\n\t\t,CONVERT(INT, CONVERT(VARCHAR, ws.POS_BRANCH)) AS 'BranchKey' -- Only Retail with POS\n\t\t--,CONVERT(INT, CONVERT(VARCHAR, b.BRANCH)) AS 'BranchKey' -- Only Retail without POS\n\t\t,p.COST as 'CostperUnit'\n\t\t,(wb.BALANCE) / 1000.0 AS 'Quantity' \n\t\t,(wb.BALANCE) / 1000.0 * (p.COST) as 'Stock Value'\n\t\t\n\t\t,GETDATE() AS RowInsertDatetime\n\t\t--,wt.WARHSTYPENAME -- Only QA \n\t\t-- ,p.PARTNAME -- Only QA  \n\t\t--,ws.WARHSNAME -- Only QA\n\t\t--,w.WARHSDES  -- Only QA\n       FROM [tous].[dbo].WARHSBAL wb \n       Left join  [tous].[dbo].WAREHOUSES ws ON ws.WARHS = wb.WARHS \n       Left join  [tous].[dbo].CUSTOMERS c ON c.CUST = wb.CUST   \n       Left join  [tous].[dbo].PART p on wb.PART=p.PART \n\t   Left join  [tous].[dbo].BRANCHES b ON b.WARHS = wb.WARHS -- Only Retail without POS\n\t  -- left join [dbo].WARHSTYPE wt on wt.WARHSTYPE=w.WARHSTYPE -- Only QA\nWHERE  1 = 1\nand year(convert(smalldatetime, (wb.LASTDATE + 46283040) / 1440.0)) >= 2018\n       --and ws.WARHSNAME in ('Main', 'SV')  --QA Filter\n\t   --and p.PARTNAME='LL-1C' --QA Filter\n\t   --and convert(smalldatetime, (wb.LASTDATE + 46283040) / 1440.0)>='01/01/2016' --QA Filter\n)Inv\nGROUP BY\nInv.ItemKey\n,Inv.Date\n,Inv.TYPE\n,Inv.Status\n,Inv.WarehsKey\n,Inv.BranchKey\n,Inv.CostperUnit\n,Inv.RowInsertDatetime",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "truncate table MRR_Prio_Inventory",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"tableOption": "autoCreate",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ItemKey",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "ItemKey",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Date",
+									"type": "DateTime",
+									"physicalType": "date"
+								},
+								"sink": {
+									"name": "Date",
+									"type": "DateTime",
+									"physicalType": "DateTime"
+								}
+							},
+							{
+								"source": {
+									"name": "Type",
+									"type": "String",
+									"physicalType": "nchar"
+								},
+								"sink": {
+									"name": "Type",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "סטטוס",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "סטטוס",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "WarehsKey",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "WarehsKey",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "BranchKey",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "BranchKey",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "CostperUnit",
+									"type": "Double",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "CostperUnit",
+									"type": "Double",
+									"physicalType": "Double"
+								}
+							},
+							{
+								"source": {
+									"name": "Quantity",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 6,
+									"precision": 38
+								},
+								"sink": {
+									"name": "Quantity",
+									"type": "Decimal",
+									"physicalType": "Decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "StockValue",
+									"type": "Double",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "StockValue",
+									"type": "Double",
+									"physicalType": "Double"
+								}
+							},
+							{
+								"source": {
+									"name": "RowInsertDatetime",
+									"type": "DateTime",
+									"physicalType": "datetime"
+								},
+								"sink": {
+									"name": "RowInsertDatetime",
+									"type": "DateTime",
+									"physicalType": "DateTime"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Source_Priority",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "[dbo].PART"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DWH_Dynamic",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "MRR_Prio_Inventory"
+						}
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Inventory"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-22T10:51:25Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

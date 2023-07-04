@@ -1,0 +1,9 @@
+{
+	"name": "alpaadf",
+	"location": "westeurope",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "bc1417b9-e995-4143-9253-21d0a9397eb7",
+		"tenantId": "00b3f377-c1d0-4930-ba7b-f2e5ec4bf11f"
+	}
+}

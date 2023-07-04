@@ -1,0 +1,246 @@
+{
+	"name": "Master Pipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "UpScale SQL DWH",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://management.azure.com/subscriptions/81c0a8d3-231c-4899-b0f1-6f41609b9a25/resourceGroups/AlpaRG/providers/Microsoft.Sql/servers/alpa/databases/alpa_dwh?api-version=2021-02-01-preview",
+					"method": "PUT",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"sku": {
+							"name": "S6",
+							"tier": "Standard"
+						},
+						"location": "West Europe"
+					},
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://management.azure.com/"
+					}
+				}
+			},
+			{
+				"name": "DownScale SQL DWH",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "PBI DS Refresh",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "EmailNotificition_DimTablesRun",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "EmailNotificition_FactTablesRun",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "EmailNotificition_PBIDSRefresh",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://management.azure.com/subscriptions/81c0a8d3-231c-4899-b0f1-6f41609b9a25/resourceGroups/AlpaRG/providers/Microsoft.Sql/servers/alpa/databases/alpa_dwh?api-version=2021-02-01-preview",
+					"method": "PUT",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"sku": {
+							"name": "S2",
+							"tier": "Standard"
+						},
+						"location": "West Europe"
+					},
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://management.azure.com/"
+					}
+				}
+			},
+			{
+				"name": "Dim Tables Run",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "UpScale SQL DWH",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Dim Tables Run",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Fact Tables Run",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Dim Tables Run",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Fact Tables Run",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "PBI DS Refresh",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Fact Tables Run",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PBI DS Refresh",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "EmailNotificition_DimTablesRun",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Dim Tables Run",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-159.westeurope.logic.azure.com:443/workflows/d4e921696d6b4c90be4875dae6a42580/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=sSD3uRoTQa0fclfsQN-1txzuH4XHFwjmzkPOJ_gN-7E",
+					"method": "POST",
+					"body": {
+						"value": "\"This is a custom dynamic message from your pipeline with run ID @{pipeline().RunId}. Data Factory Name: @{pipeline().DataFactory},\n\npipelineName: @{pipeline().Pipeline}.\nWith the message: @{activity('Dim Tables Run').error.message}\"",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "EmailNotificition_FactTablesRun",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Fact Tables Run",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-159.westeurope.logic.azure.com:443/workflows/d4e921696d6b4c90be4875dae6a42580/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=sSD3uRoTQa0fclfsQN-1txzuH4XHFwjmzkPOJ_gN-7E",
+					"method": "POST",
+					"body": {
+						"value": "\"This is a custom dynamic message from your pipeline with run ID @{pipeline().RunId}. Data Factory Name: @{pipeline().DataFactory},\n\npipelineName: @{pipeline().Pipeline}.\nWith the message: @{activity('Fact Tables Run').error.message}\"",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "EmailNotificition_PBIDSRefresh",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "PBI DS Refresh",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-159.westeurope.logic.azure.com:443/workflows/d4e921696d6b4c90be4875dae6a42580/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=sSD3uRoTQa0fclfsQN-1txzuH4XHFwjmzkPOJ_gN-7E",
+					"method": "POST",
+					"body": {
+						"value": "\"This is a custom dynamic message from your pipeline with run ID @{pipeline().RunId}. Data Factory Name: @{pipeline().DataFactory},\n\npipelineName: @{pipeline().Pipeline}.\nWith the message: @{activity('PBI DS Refresh').error.message}\"",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"FailureM": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-07-02T15:54:42Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,98 @@
+{
+	"name": "Scale Up-Down",
+	"properties": {
+		"activities": [
+			{
+				"name": "Wait1",
+				"type": "Wait",
+				"dependsOn": [
+					{
+						"activity": "UpScale SQL DWH",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 1
+				}
+			},
+			{
+				"name": "UpScale SQL DWH",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://management.azure.com/subscriptions/81c0a8d3-231c-4899-b0f1-6f41609b9a25/resourceGroups/AlpaRG/providers/Microsoft.Sql/servers/alpa/databases/alpa_dwh?api-version=2021-02-01-preview",
+					"method": "PUT",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"sku": {
+							"name": "S6",
+							"tier": "Standard"
+						},
+						"location": "West Europe"
+					},
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://management.azure.com/"
+					}
+				}
+			},
+			{
+				"name": "DownScale SQL DWH",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Wait1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://management.azure.com/subscriptions/81c0a8d3-231c-4899-b0f1-6f41609b9a25/resourceGroups/AlpaRG/providers/Microsoft.Sql/servers/alpa/databases/alpa_dwh?api-version=2021-02-01-preview",
+					"method": "PUT",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"sku": {
+							"name": "S0",
+							"tier": "Standard"
+						},
+						"location": "West Europe"
+					},
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://management.azure.com/"
+					}
+				}
+			}
+		],
+		"folder": {
+			"name": "Scalling"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-05-24T14:14:40Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

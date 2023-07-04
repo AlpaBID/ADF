@@ -1,0 +1,64 @@
+{
+	"name": "ItemsFile",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "FileServer_cav",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Cav Files For Daily"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation",
+				"fileName": "ITEMS1.csv"
+			},
+			"columnDelimiter": ",",
+			"encodingName": "WINDOWS-1255",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "����",
+				"type": "String"
+			},
+			{
+				"name": "���� ����",
+				"type": "String"
+			},
+			{
+				"name": "���� �����",
+				"type": "String"
+			},
+			{
+				"name": "�����",
+				"type": "String"
+			},
+			{
+				"name": "����� �����",
+				"type": "String"
+			},
+			{
+				"name": "���� ��. �����",
+				"type": "String"
+			},
+			{
+				"name": "�. ����",
+				"type": "String"
+			},
+			{
+				"name": "�.�����",
+				"type": "String"
+			},
+			{
+				"name": "����� ��������",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

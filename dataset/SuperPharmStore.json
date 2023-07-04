@@ -1,0 +1,74 @@
+{
+	"name": "SuperPharmStore",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "FileServer_SuperPharm",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Super Pharm Source"
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation",
+				"fileName": "רשימת חנויות עם טלפונים וכתובת מייל לספקים - מעודכן ליום 1.8.2022 (003).xlsx",
+				"folderPath": "SuperPhram Stores 231122"
+			},
+			"sheetIndex": 0,
+			"firstRowAsHeader": true
+		},
+		"schema": [
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

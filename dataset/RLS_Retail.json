@@ -1,0 +1,20 @@
+{
+	"name": "RLS_Retail",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dwh",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "RLS Sink"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "MRR_RLS_Retail"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

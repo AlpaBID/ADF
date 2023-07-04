@@ -1,0 +1,145 @@
+{
+	"name": "SalesNewFile2",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "FileServer_cav",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Cav Files For Daily"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation",
+				"fileName": "ASCSVKCSTINVLN.CSV",
+				"folderPath": "CAV"
+			},
+			"columnDelimiter": ",",
+			"encodingName": "WINDOWS-1255",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "MR",
+				"type": "String"
+			},
+			{
+				"name": "FY",
+				"type": "String"
+			},
+			{
+				"name": "INVOICE",
+				"type": "String"
+			},
+			{
+				"name": "INVLINE",
+				"type": "String"
+			},
+			{
+				"name": "CASES",
+				"type": "String"
+			},
+			{
+				"name": "FACTOR",
+				"type": "String"
+			},
+			{
+				"name": "GROSSPRC1",
+				"type": "String"
+			},
+			{
+				"name": "GROSSSUM",
+				"type": "String"
+			},
+			{
+				"name": "ITEMCODE",
+				"type": "String"
+			},
+			{
+				"name": "LINENET",
+				"type": "String"
+			},
+			{
+				"name": "LINESALEDISCOUNT",
+				"type": "String"
+			},
+			{
+				"name": "SINGELQUN",
+				"type": "String"
+			},
+			{
+				"name": "GROSSPRC",
+				"type": "String"
+			},
+			{
+				"name": "INVPREPARDATE",
+				"type": "String"
+			},
+			{
+				"name": "HAN2",
+				"type": "String"
+			},
+			{
+				"name": "HAN3",
+				"type": "String"
+			},
+			{
+				"name": "HANADDCODE",
+				"type": "String"
+			},
+			{
+				"name": "HANADDPRECENT",
+				"type": "String"
+			},
+			{
+				"name": "HANMIVZACODE",
+				"type": "String"
+			},
+			{
+				"name": "HANMIVZAPERCENT",
+				"type": "String"
+			},
+			{
+				"name": "HANREGULARCODE",
+				"type": "String"
+			},
+			{
+				"name": "HANREGULARPERCENT",
+				"type": "String"
+			},
+			{
+				"name": "LINEDISCOUNTS",
+				"type": "String"
+			},
+			{
+				"name": "LINEEXTRADISCOUNTS",
+				"type": "String"
+			},
+			{
+				"name": "LINESALEDISCOUNTSUM",
+				"type": "String"
+			},
+			{
+				"name": "LINETRADEDISCOUNTS",
+				"type": "String"
+			},
+			{
+				"name": "RESONCODE",
+				"type": "String"
+			},
+			{
+				"name": "BONGROUP",
+				"type": "String"
+			},
+			{
+				"name": "BONVAL",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

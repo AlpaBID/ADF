@@ -1,0 +1,12 @@
+{
+	"name": "dwh",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"connectionString": "integrated security=False;encrypt=True;connection timeout=30;data source=alpa.database.windows.net;initial catalog=alpa_dwh;user id=alpaadmindwh",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkFMUEFBREZfZDEyYzg1NDUtNmI1ZC00ZTAwLWFjMGEtN2UxZGNiMWJlOGE5Ig0KfQ=="
+		}
+	}
+}

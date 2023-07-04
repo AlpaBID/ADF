@@ -1,0 +1,299 @@
+{
+	"name": "SuperPharm Main",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy_SuperPharmStore",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ExcelSource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "TRUNCATE TABLE dbo.MRR_SuperPharmStore",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "מס' לקוח",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "מס' לקוח",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "מס' חנות",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "מס' חנות",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "שם חנות",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "שם חנות",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "שם חברה מנהלת",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "שם חברה מנהלת",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "מספר חברה",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "מספר חברה",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "בדיקה",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "בדיקה",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "שם עמית/ה",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "שם עמית/ה",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "מס' טלפון בחנות",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "מס' טלפון בחנות",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "מס' טלפון עמית/ה",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "מס' טלפון עמית/ה",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "דוא\"ל עמית/ה",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "דוא\"ל עמית/ה",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "דוא\"ל מפקידה",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "דוא\"ל מפקידה",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "מ.קוסמטיקה",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "מ.קוסמטיקה",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "מ.מסחרי",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "מ.מסחרי",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "מ.כללי",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "מ.כללי",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "כתובת החנות",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "כתובת החנות",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "מזהה לקוח",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "מזהה לקוח",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false,
+							"culture": "en-IL"
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "SuperPharmStore",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "MRR_SuperPharmStore",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "SuperPharmInventory",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Copy_SuperPharmStore",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "SuperPharmInventory",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "SuperPharmSales",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Copy_SuperPharmStore",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "SuperPharmSales",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "Super Pharm"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-07-02T10:37:46Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

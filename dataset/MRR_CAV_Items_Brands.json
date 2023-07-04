@@ -1,0 +1,20 @@
+{
+	"name": "MRR_CAV_Items_Brands",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dwh",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Cav Sink"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "MRR_CAV_Items_Brands"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

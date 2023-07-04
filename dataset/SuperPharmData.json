@@ -1,0 +1,72 @@
+{
+	"name": "SuperPharmData",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "FileServer_SuperPharm",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Super Pharm Source"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation",
+				"folderPath": "superpharm"
+			},
+			"columnDelimiter": "|",
+			"encodingName": "WINDOWS-1255",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "DtDate",
+				"type": "String"
+			},
+			{
+				"name": "SupplierId",
+				"type": "String"
+			},
+			{
+				"name": "ManufacturerId",
+				"type": "String"
+			},
+			{
+				"name": "DepartmentId",
+				"type": "String"
+			},
+			{
+				"name": "DepartmentDesc",
+				"type": "String"
+			},
+			{
+				"name": "ItemBarcode",
+				"type": "String"
+			},
+			{
+				"name": "ItemName",
+				"type": "String"
+			},
+			{
+				"name": "IstoreId",
+				"type": "String"
+			},
+			{
+				"name": "Quantity",
+				"type": "String"
+			},
+			{
+				"name": "Sales",
+				"type": "String"
+			},
+			{
+				"name": "StockQty",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,514 @@
+{
+	"name": "Prio_Customers",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy Prio_Customers",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;\n\n/*\n1-desig\n2-tous\n*/\n-------------------------------------------------1-desig------------------------------------------------\n\n\nselect \n'1' as 'EntityID'\n,CAST('1' as varchar) + cast(CONVERT(INT, CONVERT(VARCHAR, c.CUST))as varchar) AS 'AccountKey'\n,c.CUSTNAME as 'מספר לקוח'\n,c.CUSTNAME + ' | ' +case when substring(c.CUSTDES,1,1) like '%[a-z,A-Z]%' or substring(c.CUSTDES,1,1)='.'  \nTHEN  system.dbo.tabula_hebconvert(c.CUSTDES) \nELSE system.dbo.tabula_hebconvert(c.CUSTDES) end as 'מזהה לקוח'\n,case when substring(c.CUSTDES,1,1) like '%[a-z,A-Z]%' or substring(c.CUSTDES,1,1)='.'  \nTHEN  system.dbo.tabula_hebconvert(c.CUSTDES) \nELSE system.dbo.tabula_hebconvert(c.CUSTDES) end as 'שם לקוח'\n\n----Enable This Part for Parent and Child Customers method\n\n--,c2.CUSTNAME as 'מספר לקוח אב'\n--,c2.CUSTNAME + ' | ' +case when substring(c2.CUSTDES,1,1) like '%[a-z,A-Z]%' or substring(c2.CUSTDES,1,1)='.'  THEN  REVERSE(c2.CUSTDES) ELSE c2.CUSTDES end as 'מזהה לקוח אב'\n--,case when substring(c2.CUSTDES,1,1) like '%[a-z,A-Z]%' or substring(c2.CUSTDES,1,1)='.'  THEN  REVERSE(c2.CUSTDES) ELSE c2.CUSTDES end as 'שם לקוח אב'\n--,Case when c2.CUSTDES='' then c.CUSTDES else case when substring(c2.CUSTDES,1,1) like '%[a-z,A-Z]%' or substring(c2.CUSTDES,1,1)='.'  THEN  REVERSE(c2.CUSTDES) ELSE c2.CUSTDES end end as 'לקוחות' -- this fiels enable to contain all regular customers and all Fathers in the sam column\n\n,ct.CTYPECODE as 'קוד קטגורייה'\n,system.dbo.tabula_hebconvert(ct.CTYPENAME) as 'קטגוריית לקוח' \n,cs.SPEC1 AS 'פרמטר 1'\n,cs.SPEC2 AS 'פרמטר 2'\n,cs.SPEC3 AS 'פרמטר 3'\n,cs.SPEC4 AS 'פרמטר 4'\n,cs.SPEC5 AS 'פרמטר 5'\n,cs.SPEC6 AS 'פרמטר 6'\n,cs.SPEC7 AS 'פרמטר 7'\n,cs.SPEC8 AS 'פרמטר 8'\n,c.[STATE] AS 'עיר'\n,c.ADDRESS AS 'כתובת'\n,c.PHONE AS 'מספר טלפון'\n,cst.STATDES AS 'סטטוס לקוח'\n,CAST('1' as varchar) + cast(CONVERT(INT, CONVERT(VARCHAR, c.AGENT))as varchar) AS 'AgentKey'\n,null as 'תנאי תשלום ללקוח'\n,null AS 'MAXOBLIGO'\n,null as 'MAXCREDIT'\n,null as 'אובליגו'\n,null as 'OBLIGO Balance' --יתרת אובליגו\t\t\n,null 'IsClubMember' --need to change according to your cust\n,null as 'מגדר' --need to change according to your cust\n,null as 'גיל' --need to change according to your cust\n,null as 'תאריך יום הולדת' --need to change according to your cust\n,null as 'תאריך הצטרפות'\n,null as 'תאריך תוקף מועדון' --need to change according to your cust\n,null as 'שיוך למועדון לקוחות' --need to change according to your cust\n,null as 'אישור מייל' --need to change according to your cust\n,null as 'אישור SMS' --need to change according to your cust\n,case when Month(getdate())= MoNTH(DATEADD(year, -18, CONVERT(SMALLDATETIME, (c.CREATEDDATE + 46283040) / 1440.0))) \n then 'חודש נוכחי' else FORMAT(DATEADD(year, -18, CONVERT(SMALLDATETIME, (c.CREATEDDATE + 46283040) / 1440.0)),'MMMM')\n END as 'חודש יום הולדת' --need to change according to your cust\n,c.BRANCH as 'JoinBranchID' --need to change according to your cust\n\n,GETDATE() AS 'RowInsertDatetime'\n\n\nfrom [desig].[dbo].CUSTOMERS c\nLeft join [desig].[dbo].CTYPE ct  on c.CTYPE=ct.CTYPE\nLeft join [desig].[dbo].CUSTSPEC cs on cs.CUST=c.CUST\nLeft join [desig].[dbo].[COUNTRIES] on [COUNTRIES].COUNTRY=c.COUNTRY\nleft join [desig].[dbo].CUSTOMERS c2 on c.MCUST=c2.CUST ----Enable This Part for Parent and Child Customers method\nleft join [desig].[dbo].CUSTSTATS cst on c.CUSTSTAT=cst.CUSTSTAT\n\nwhere\nexists\n(\nSELECT null FROM [desig].[dbo].INVOICES i\nwhere i.CUST=c.CUST\n)\nor  exists\n(\nSELECT null  FROM [desig].[dbo].DOCUMENTS d\nwhere d.CUST=c.CUST\n)\n\n-------------------------------------------------2-tous------------------------------------------------\nunion all\n\n\n\nselect \n\t    '2' as 'EntityID'\n,CAST('2' as varchar) + cast(CONVERT(INT, CONVERT(VARCHAR, c.CUST))as varchar) AS 'AccountKey'\n,c.CUSTNAME as 'מספר לקוח'\n,c.CUSTNAME + ' | ' +case when substring(c.CUSTDES,1,1) like '%[a-z,A-Z]%' or substring(c.CUSTDES,1,1)='.'  \nTHEN  system.dbo.tabula_hebconvert(c.CUSTDES) \nELSE system.dbo.tabula_hebconvert(c.CUSTDES) end as 'מזהה לקוח'\n,case when substring(c.CUSTDES,1,1) like '%[a-z,A-Z]%' or substring(c.CUSTDES,1,1)='.'  \nTHEN  system.dbo.tabula_hebconvert(c.CUSTDES) \nELSE system.dbo.tabula_hebconvert(c.CUSTDES) end as 'שם לקוח'\n\n----Enable This Part for Parent and Child Customers method\n\n--,c2.CUSTNAME as 'מספר לקוח אב'\n--,c2.CUSTNAME + ' | ' +case when substring(c2.CUSTDES,1,1) like '%[a-z,A-Z]%' or substring(c2.CUSTDES,1,1)='.'  THEN  REVERSE(c2.CUSTDES) ELSE c2.CUSTDES end as 'מזהה לקוח אב'\n--,case when substring(c2.CUSTDES,1,1) like '%[a-z,A-Z]%' or substring(c2.CUSTDES,1,1)='.'  THEN  REVERSE(c2.CUSTDES) ELSE c2.CUSTDES end as 'שם לקוח אב'\n--,Case when c2.CUSTDES='' then c.CUSTDES else case when substring(c2.CUSTDES,1,1) like '%[a-z,A-Z]%' or substring(c2.CUSTDES,1,1)='.'  THEN  REVERSE(c2.CUSTDES) ELSE c2.CUSTDES end end as 'לקוחות' -- this fiels enable to contain all regular customers and all Fathers in the sam column\n\n,ct.CTYPECODE as 'קוד קטגורייה'\n,system.dbo.tabula_hebconvert(ct.CTYPENAME) as 'קטגוריית לקוח' \n,cs.SPEC1 AS 'פרמטר 1'\n,cs.SPEC2 AS 'פרמטר 2'\n,cs.SPEC3 AS 'פרמטר 3'\n,cs.SPEC4 AS 'פרמטר 4'\n,cs.SPEC5 AS 'פרמטר 5'\n,cs.SPEC6 AS 'פרמטר 6'\n,cs.SPEC7 AS 'פרמטר 7'\n,cs.SPEC8 AS 'פרמטר 8'\n,c.[STATE] AS 'עיר'\n,c.ADDRESS AS 'כתובת'\n,c.PHONE AS 'מספר טלפון'\n,cst.STATDES AS 'סטטוס לקוח'\n,CAST('2' as varchar) + cast(CONVERT(INT, CONVERT(VARCHAR, c.AGENT))as varchar) AS 'AgentKey'\n,null as 'תנאי תשלום ללקוח'\n,null AS 'MAXOBLIGO'\n,null as 'MAXCREDIT'\n,null as 'אובליגו'\n,null as 'OBLIGO Balance' --יתרת אובליגו\t\t\n,null 'IsClubMember' --need to change according to your cust\n,null as 'מגדר' --need to change according to your cust\n,null as 'גיל' --need to change according to your cust\n,null as 'תאריך יום הולדת' --need to change according to your cust\n,null as 'תאריך הצטרפות'\n,null as 'תאריך תוקף מועדון' --need to change according to your cust\n,null as 'שיוך למועדון לקוחות' --need to change according to your cust\n,null as 'אישור מייל' --need to change according to your cust\n,null as 'אישור SMS' --need to change according to your cust\n,case when Month(getdate())= MoNTH(DATEADD(year, -18, CONVERT(SMALLDATETIME, (c.CREATEDDATE + 46283040) / 1440.0))) \n then 'חודש נוכחי' else FORMAT(DATEADD(year, -18, CONVERT(SMALLDATETIME, (c.CREATEDDATE + 46283040) / 1440.0)),'MMMM')\n END as 'חודש יום הולדת' --need to change according to your cust\n,c.BRANCH as 'JoinBranchID' --need to change according to your cust\n\n,GETDATE() AS 'RowInsertDatetime'\n\n\nfrom [tous].[dbo].CUSTOMERS c\nLeft join [tous].[dbo].CTYPE ct  on c.CTYPE=ct.CTYPE\nLeft join [tous].[dbo].CUSTSPEC cs on cs.CUST=c.CUST\nLeft join [tous].[dbo].[COUNTRIES] on [COUNTRIES].COUNTRY=c.COUNTRY\nleft join [tous].[dbo].CUSTOMERS c2 on c.MCUST=c2.CUST ----Enable This Part for Parent and Child Customers method\nleft join [tous].[dbo].CUSTSTATS cst on c.CUSTSTAT=cst.CUSTSTAT\n\nwhere\nexists\n(\nSELECT null FROM [tous].[dbo].INVOICES i\nwhere i.CUST=c.CUST\n)\nor  exists\n(\nSELECT null  FROM [tous].[dbo].DOCUMENTS d\nwhere d.CUST=c.CUST\n)",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "TRUNCATE TABLE [MRR_Prio_Customers]",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "AccountKey",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "AccountKey",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "מספר לקוח",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מספר לקוח",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "מזהה לקוח",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מזהה לקוח",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "שם לקוח",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "שם לקוח",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "קוד קטגורייה",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "קוד קטגורייה",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "קטגוריית לקוח",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "קטגוריית לקוח",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "פרמטר 1",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "פרמטר 1",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "פרמטר 2",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "פרמטר 2",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "פרמטר 3",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "פרמטר 3",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "פרמטר 4",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "פרמטר 4",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "פרמטר 5",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "פרמטר 5",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "פרמטר 6",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "פרמטר 6",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "פרמטר 7",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "פרמטר 7",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "פרמטר 8",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "פרמטר 8",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "עיר",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "עיר",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "כתובת",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "כתובת",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "מספר טלפון",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מספר טלפון",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "סטטוס לקוח",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "סטטוס לקוח",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "AgentKey",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "AgentKey",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "תנאי תשלום ללקוח",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "תנאי תשלום ללקוח",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "MAXOBLIGO",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "MAXOBLIGO",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "MAXCREDIT",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "MAXCREDIT",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "אובליגו",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "אובליגו",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "OBLIGO Balance",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "OBLIGO Balance",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "IsClubMember",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "IsClubMember",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "מגדר",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "מגדר",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "גיל",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "גיל",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "תאריך יום הולדת",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "תאריך יום הולדת",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "תאריך הצטרפות",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "תאריך הצטרפות",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "תאריך תוקף מועדון",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "תאריך תוקף מועדון",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "שיוך למועדון לקוחות",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "שיוך למועדון לקוחות",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "אישור מייל",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "אישור מייל",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "אישור SMS",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "אישור SMS",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "חודש יום הולדת",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "חודש יום הולדת",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "JoinBranchID",
+									"type": "Int64",
+									"physicalType": "bigint"
+								},
+								"sink": {
+									"name": "JoinBranchID",
+									"type": "Int64",
+									"physicalType": "Int64"
+								}
+							},
+							{
+								"source": {
+									"name": "RowInsertDatetime",
+									"type": "DateTime",
+									"physicalType": "datetime"
+								},
+								"sink": {
+									"name": "RowInsertDatetime",
+									"type": "DateTime",
+									"physicalType": "DateTime"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Source_Priority",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "[dbo].CUSTOMERS"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DWH_Dynamic",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "MRR_Prio_Customers"
+						}
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Customers/Priority"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-15T09:59:31Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

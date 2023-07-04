@@ -1,0 +1,312 @@
+{
+	"name": "WMS_Eroz",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy WMS_Eroz",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SELECT\n\t   DISTINCT([AUDITID])\n      ,AU.[USERID] AS 'משתמש'\n      ,AU.[ACTIVITYDATE] AS 'זמן הפעולה'\n\t  ,cast(AU.[ACTIVITYDATE] as date) AS 'Date'\n      ,AU.[DOCUMENT] AS 'שם מסמך'\n      ,AU.[DOCUMENTLINE] AS 'שורת מסמך'\n      ,AU.[FROMLOAD] AS 'מטעינה'\n      ,AU.[TOLOAD] AS 'לטעינה'\n      ,AU.[FROMLOC] AS 'ממיקום'\n      ,AU.[TOLOC] AS 'למיקום'\n      ,AU.[FROMQTY] AS 'מכמות'\n      ,AU.[TOCONTAINER] AS 'לקונטיינר'\n\t  ,VS.[SKU] AS 'מספר פריט'\n\t  ,VS.[SKUDESC] AS 'תאור פריט'\n\t  ,OL.ORDERID AS 'מספר הזמנה'\n      ,AU.[TOQTY] AS 'לכמות'\n\t  ,VS.each_in_case -- CHECK IF NULL FOR 1 \n\t  ,ISNULL(VS.each_in_case,1.00)\t\tAS 'גורם אירוז'\n\t  ,FLOOR(AU.TOQTY / ISNULL(VS.each_in_case,1.00) ) AS 'כמות ארגזים'\n\t  ,AU.TOQTY - (ISNULL(VS.each_in_case,1.00) * FLOOR(AU.TOQTY/ ISNULL(VS.each_in_case,1.00) )) AS 'כמות יחידות'\n\nFROM [SCEXPERT].[dbo].[vsku] VS\nLEFT JOIN [SCEXPERT].[dbo].[AUDIT] AU\tON VS.SKU = AU.SKU \nLEFT JOIN [dbo].[ORDERLOADS] OL\t\t\tON OL.PICKLIST = AU.DOCUMENT\nLEFT JOIN [dbo].[SKUUOM] SKUU\t\t\tON SKUU.SKU = VS.SKU\n\nWHERE AU.CONSIGNEE = 'JV'\nAND AU.ACTIVITYTYPE = 'PICKLOAD'",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"tableOption": "autoCreate",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "AUDITID",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "AUDITID",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "משתמש",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "משתמש",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "זמן הפעולה",
+									"type": "DateTime",
+									"physicalType": "datetime"
+								},
+								"sink": {
+									"name": "זמן הפעולה",
+									"type": "DateTime",
+									"physicalType": "DateTime"
+								}
+							},
+							{
+								"source": {
+									"name": "Date",
+									"type": "DateTime",
+									"physicalType": "date"
+								},
+								"sink": {
+									"name": "Date",
+									"type": "DateTime",
+									"physicalType": "DateTime"
+								}
+							},
+							{
+								"source": {
+									"name": "שם מסמך",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "שם מסמך",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "שורת מסמך",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "שורת מסמך",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "מטעינה",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מטעינה",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "לטעינה",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "לטעינה",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ממיקום",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "ממיקום",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "למיקום",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "למיקום",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "מכמות",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 4,
+									"precision": 18
+								},
+								"sink": {
+									"name": "מכמות",
+									"type": "Decimal",
+									"physicalType": "Decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "לקונטיינר",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "לקונטיינר",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "מספר פריט",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מספר פריט",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "תאור פריט",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "תאור פריט",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "מספר הזמנה",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מספר הזמנה",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "לכמות",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 4,
+									"precision": 18
+								},
+								"sink": {
+									"name": "לכמות",
+									"type": "Decimal",
+									"physicalType": "Decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "each_in_case",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "each_in_case",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "גורם אירוז",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "גורם אירוז",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "כמות ארגזים",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 0,
+									"precision": 29
+								},
+								"sink": {
+									"name": "כמות ארגזים",
+									"type": "Decimal",
+									"physicalType": "Decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "כמות יחידות",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 0,
+									"precision": 38
+								},
+								"sink": {
+									"name": "כמות יחידות",
+									"type": "Decimal",
+									"physicalType": "Decimal"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "WMS",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "MRR_WMS_Eroz",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Eroz/WMS"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-06-21T10:20:24Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
