@@ -1,0 +1,207 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "alpaadf"
+		},
+		"FileServer_SuperPharm_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'FileServer_SuperPharm'"
+		},
+		"FileServer_cav_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'FileServer_cav'"
+		},
+		"WMS_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'WMS'",
+			"defaultValue": "Integrated Security=True;Data Source=10.0.0.35;Initial Catalog=SCEXPERT"
+		},
+		"WMS_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'WMS'"
+		},
+		"dwh_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'dwh'"
+		},
+		"priorityls_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'priorityls'"
+		},
+		"FileServer_SuperPharm_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "\\\\Alpa-BI\\bi\\"
+		},
+		"FileServer_SuperPharm_properties_typeProperties_userId": {
+			"type": "string",
+			"defaultValue": "ALPA\\excelando"
+		},
+		"FileServer_cav_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "\\\\cav-server\\bi"
+		},
+		"FileServer_cav_properties_typeProperties_userId": {
+			"type": "string",
+			"defaultValue": "alpa-sql2\\share"
+		},
+		"WMS_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "ALPA\\excelando"
+		},
+		"alpablob_properties_typeProperties_serviceEndpoint": {
+			"type": "string",
+			"defaultValue": "https://alpablob.blob.core.windows.net/"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "alpaadf_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"dwh_connectionString": {
+						"value": "[parameters('dwh_connectionString')]"
+					},
+					"alpablob_properties_typeProperties_serviceEndpoint": {
+						"value": "[parameters('alpablob_properties_typeProperties_serviceEndpoint')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "alpaadf_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"FileServer_SuperPharm_password": {
+						"value": "[parameters('FileServer_SuperPharm_password')]"
+					},
+					"FileServer_cav_password": {
+						"value": "[parameters('FileServer_cav_password')]"
+					},
+					"WMS_connectionString": {
+						"value": "[parameters('WMS_connectionString')]"
+					},
+					"WMS_password": {
+						"value": "[parameters('WMS_password')]"
+					},
+					"priorityls_connectionString": {
+						"value": "[parameters('priorityls_connectionString')]"
+					},
+					"FileServer_SuperPharm_properties_typeProperties_host": {
+						"value": "[parameters('FileServer_SuperPharm_properties_typeProperties_host')]"
+					},
+					"FileServer_SuperPharm_properties_typeProperties_userId": {
+						"value": "[parameters('FileServer_SuperPharm_properties_typeProperties_userId')]"
+					},
+					"FileServer_cav_properties_typeProperties_host": {
+						"value": "[parameters('FileServer_cav_properties_typeProperties_host')]"
+					},
+					"FileServer_cav_properties_typeProperties_userId": {
+						"value": "[parameters('FileServer_cav_properties_typeProperties_userId')]"
+					},
+					"WMS_properties_typeProperties_userName": {
+						"value": "[parameters('WMS_properties_typeProperties_userName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'alpaadf_ArmTemplate_0')]"
+			]
+		},
+		{
+			"name": "alpaadf_ArmTemplate_2",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_2.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'alpaadf_ArmTemplate_1')]"
+			]
+		},
+		{
+			"name": "alpaadf_ArmTemplate_3",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_3.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'alpaadf_ArmTemplate_2')]"
+			]
+		},
+		{
+			"name": "alpaadf_ArmTemplate_4",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_4.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'alpaadf_ArmTemplate_3')]"
+			]
+		}
+	]
+}

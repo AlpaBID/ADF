@@ -1,0 +1,730 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "alpaadf"
+		},
+		"dwh_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'dwh'"
+		},
+		"alpablob_properties_typeProperties_serviceEndpoint": {
+			"type": "string",
+			"defaultValue": "https://alpablob.blob.core.windows.net/"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/PBI DS Refresh')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "PBI DS Refresh",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat(\n'https://api.powerbi.com/v1.0/myorg/groups/'\n, pipeline().parameters.WorkspaceID\n, '/datasets/'\n, pipeline().parameters.DatasetID\n, '/refreshes'\n)",
+								"type": "Expression"
+							},
+							"method": "POST",
+							"headers": {},
+							"body": "{“notifyOption”:”NoNotification”}",
+							"authentication": {
+								"type": "ServicePrincipal",
+								"userTenant": "00b3f377-c1d0-4930-ba7b-f2e5ec4bf11f",
+								"username": "3aa907c5-c2bc-4f64-937b-75897fcbb73a",
+								"resource": "https://analysis.windows.net/powerbi/api",
+								"password": {
+									"type": "SecureString",
+									"value": "**********"
+								}
+							}
+						}
+					},
+					{
+						"name": "Until1",
+						"type": "Until",
+						"dependsOn": [
+							{
+								"activity": "PBI DS Refresh",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@not(\nequals(\nfirst(\njson(\nstring(\nactivity('Get dataset refresh status').output\n)\n).value\n).status,'Unknown'\n)\n)",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Get dataset refresh status",
+									"type": "WebActivity",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"url": {
+											"value": "@concat(\n'https://api.powerbi.com/v1.0/myorg/groups/'\n,pipeline().parameters.WorkspaceID\n,'/datasets/',pipeline().parameters.DatasetID\n,'/refreshes?$top=1'\n)",
+											"type": "Expression"
+										},
+										"method": "GET",
+										"headers": {
+											"Content-Type": "application/json"
+										},
+										"authentication": {
+											"type": "ServicePrincipal",
+											"userTenant": "00b3f377-c1d0-4930-ba7b-f2e5ec4bf11f",
+											"username": "3aa907c5-c2bc-4f64-937b-75897fcbb73a",
+											"resource": "https://analysis.windows.net/powerbi/api",
+											"password": {
+												"type": "SecureString",
+												"value": "**********"
+											}
+										}
+									}
+								},
+								{
+									"name": "If Condition1",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "Get dataset refresh status",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@equals(\nfirst(\njson(\nstring(\nactivity('Get dataset refresh status').output\n)\n).value\n).status,'Unknown'\n)",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "Wait 15 seconds",
+												"type": "Wait",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"waitTimeInSeconds": 300
+												}
+											}
+										]
+									}
+								}
+							],
+							"timeout": "0.12:00:00"
+						}
+					},
+					{
+						"name": "If Condition2",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Until1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(\nfirst(\njson(\nstring(\nactivity('Get dataset refresh status').output\n)\n).value\n).status,'Failed'\n)",
+								"type": "Expression"
+							},
+							"ifTrueActivities": [
+								{
+									"name": "FailedRefreshingDataset",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": {
+											"value": "@string(\njson(\nfirst(\njson(\nstring(\nactivity('Get dataset refresh status').output\n)\n).value\n).serviceExceptionJson\n)\n)",
+											"type": "Expression"
+										},
+										"errorCode": "1000"
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"WorkspaceID": {
+						"type": "string",
+						"defaultValue": "4b9f74b5-d329-4073-a389-3dae88a03a53"
+					},
+					"DatasetID": {
+						"type": "string",
+						"defaultValue": "801c4969-259b-4e6f-b02e-01f651d5780c"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-06-25T15:57:52Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Scale Up-Down')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Wait1",
+						"type": "Wait",
+						"dependsOn": [
+							{
+								"activity": "UpScale SQL DWH",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 1
+						}
+					},
+					{
+						"name": "UpScale SQL DWH",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://management.azure.com/subscriptions/81c0a8d3-231c-4899-b0f1-6f41609b9a25/resourceGroups/AlpaRG/providers/Microsoft.Sql/servers/alpa/databases/alpa_dwh?api-version=2021-02-01-preview",
+							"method": "PUT",
+							"headers": {
+								"Content-Type": "application/json"
+							},
+							"body": {
+								"sku": {
+									"name": "S6",
+									"tier": "Standard"
+								},
+								"location": "West Europe"
+							},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://management.azure.com/"
+							}
+						}
+					},
+					{
+						"name": "DownScale SQL DWH",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Wait1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://management.azure.com/subscriptions/81c0a8d3-231c-4899-b0f1-6f41609b9a25/resourceGroups/AlpaRG/providers/Microsoft.Sql/servers/alpa/databases/alpa_dwh?api-version=2021-02-01-preview",
+							"method": "PUT",
+							"headers": {
+								"Content-Type": "application/json"
+							},
+							"body": {
+								"sku": {
+									"name": "S0",
+									"tier": "Standard"
+								},
+								"location": "West Europe"
+							},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://management.azure.com/"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Scalling"
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-05-24T14:14:40Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TMP_DownScale')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "DownScale SQL DWH",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://management.azure.com/subscriptions/81c0a8d3-231c-4899-b0f1-6f41609b9a25/resourceGroups/AlpaRG/providers/Microsoft.Sql/servers/alpa/databases/alpa_dwh?api-version=2021-02-01-preview",
+							"method": "PUT",
+							"headers": {
+								"Content-Type": "application/json"
+							},
+							"body": {
+								"sku": {
+									"name": "S0",
+									"tier": "Standard"
+								},
+								"location": "West Europe"
+							},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://management.azure.com/"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Scalling"
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-06-13T05:52:43Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/alpablob')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"serviceEndpoint": "[parameters('alpablob_properties_typeProperties_serviceEndpoint')]",
+					"accountKind": "StorageV2"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dwh')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('dwh_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ALPANEW')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DWH')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "DWH_Daily_Sales"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/dwh')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DWH_Dynamic')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"TableName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": {
+						"value": "@dataset().TableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/dwh')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MRR_CAV_Agents')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Cav Sink"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "MRR_CAV_Agents"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/dwh')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MRR_CAV_Customers')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Cav Sink"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "MRR_CAV_Customers"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/dwh')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MRR_CAV_Customers_Dtails')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Cav Sink"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "MRR_CAV_CustomersDetails"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/dwh')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MRR_CAV_Customers_Migzar')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Cav Sink"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "MRR_CAV_CustomersMigzar"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/dwh')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MRR_CAV_Inventory_ReturnDestroy')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Cav Sink"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "MRR_CAV_Inventory_ReturnDestroy"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/dwh')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MRR_CAV_Items')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Cav Sink"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "MRR_CAV_Items"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/dwh')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MRR_CAV_Items_Brands')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Cav Sink"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "MRR_CAV_Items_Brands"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/dwh')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MRR_CAV_Items_Category_Mapping')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Cav Sink"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "MRR_CAV_Items_Category_Mapping"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/dwh')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MRR_CAV_Orders')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Cav Sink"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "MRR_CAV_Orders"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/dwh')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MRR_CAV_PriceList')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Cav Sink"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "MRR_CAV_Items_PriceList"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/dwh')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MRR_CAV_Sales')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Cav Sink"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "MRR_CAV_Sales"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/dwh')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MRR_SuperPharmData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Super Pharm Sink"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "MRR_SuperPharmData"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/dwh')]"
+			]
+		}
+	]
+}

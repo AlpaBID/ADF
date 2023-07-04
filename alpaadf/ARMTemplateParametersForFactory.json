@@ -1,0 +1,45 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "alpaadf"
+		},
+		"FileServer_SuperPharm_password": {
+			"value": ""
+		},
+		"FileServer_cav_password": {
+			"value": ""
+		},
+		"WMS_connectionString": {
+			"value": "Integrated Security=True;Data Source=10.0.0.35;Initial Catalog=SCEXPERT"
+		},
+		"WMS_password": {
+			"value": ""
+		},
+		"dwh_connectionString": {
+			"value": ""
+		},
+		"priorityls_connectionString": {
+			"value": ""
+		},
+		"FileServer_SuperPharm_properties_typeProperties_host": {
+			"value": "\\\\Alpa-BI\\bi\\"
+		},
+		"FileServer_SuperPharm_properties_typeProperties_userId": {
+			"value": "ALPA\\excelando"
+		},
+		"FileServer_cav_properties_typeProperties_host": {
+			"value": "\\\\cav-server\\bi"
+		},
+		"FileServer_cav_properties_typeProperties_userId": {
+			"value": "alpa-sql2\\share"
+		},
+		"WMS_properties_typeProperties_userName": {
+			"value": "ALPA\\excelando"
+		},
+		"alpablob_properties_typeProperties_serviceEndpoint": {
+			"value": "https://alpablob.blob.core.windows.net/"
+		}
+	}
+}

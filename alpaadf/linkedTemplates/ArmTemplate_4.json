@@ -1,0 +1,3194 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "alpaadf"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/SalesCav Mirror To Blob')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy To blob",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Set FileName",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.02:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "FileServerReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings",
+									"copyBehavior": "MergeFiles"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SalesFile",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "blobSalesTargets",
+								"type": "DatasetReference",
+								"parameters": {
+									"FileName": {
+										"value": "@variables('SalesFileName')",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "Set Run Date",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "RunDate",
+							"value": {
+								"value": "@formatDateTime(utcnow(),'dd/MM/yyyy')\n",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Set FileName",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Set Run Date",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "SalesFileName",
+							"value": {
+								"value": "@concat('sales_',formatDateTime(utcnow(),'yyyyMMdd'))",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Copy To blob SalesNew",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Set FileName",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.02:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "FileServerReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings",
+									"copyBehavior": "MergeFiles"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "MR",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "MR",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "FY",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "FY",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "INVOICE",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "INVOICE",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "AGENTPRIVATE",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "AGENTPRIVATE",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "CUSTOMER",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "CUSTOMER",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "DISCOUNTPERCENT",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "DISCOUNTPERCENT",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "DISCOUNTSUM",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "DISCOUNTSUM",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "GROSS",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "GROSS",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "INVDATE",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "INVDATE",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "SALEDISCOUNT",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "SALEDISCOUNT",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "SECONDDRIVER",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "SECONDDRIVER",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "STORE",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "STORE",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "TOTALDUESUM",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "TOTALDUESUM",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "TRADEDISCOUNTS",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "TRADEDISCOUNTS",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "VAT",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "VAT",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "AGENT",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "AGENT",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "DISCOUNTS",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "DISCOUNTS",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "EXTRADISCOUNTS",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "EXTRADISCOUNTS",
+											"type": "String",
+											"physicalType": "String"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SalesNewFile",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "blobSalesNewTargets",
+								"type": "DatasetReference",
+								"parameters": {
+									"FileName": "@variables('SalesFileName')"
+								}
+							}
+						]
+					},
+					{
+						"name": "Copy To blob SalesNew2",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Set FileName",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.02:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "FileServerReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings",
+									"copyBehavior": "MergeFiles"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "MR",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "MR",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "FY",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "FY",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "INVOICE",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "INVOICE",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "INVLINE",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "INVLINE",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "CASES",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "CASES",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "FACTOR",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "FACTOR",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "GROSSPRC1",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "GROSSPRC1",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "GROSSSUM",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "GROSSSUM",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "ITEMCODE",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "ITEMCODE",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "LINENET",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "LINENET",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "LINESALEDISCOUNT",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "LINESALEDISCOUNT",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "SINGELQUN",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "SINGELQUN",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "GROSSPRC",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "GROSSPRC",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "INVPREPARDATE",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "INVPREPARDATE",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "HAN2",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "HAN2",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "HAN3",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "HAN3",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "HANADDCODE",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "HANADDCODE",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "HANADDPRECENT",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "HANADDPRECENT",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "HANMIVZACODE",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "HANMIVZACODE",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "HANMIVZAPERCENT",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "HANMIVZAPERCENT",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "HANREGULARCODE",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "HANREGULARCODE",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "HANREGULARPERCENT",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "HANREGULARPERCENT",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "LINEDISCOUNTS",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "LINEDISCOUNTS",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "LINEEXTRADISCOUNTS",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "LINEEXTRADISCOUNTS",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "LINESALEDISCOUNTSUM",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "LINESALEDISCOUNTSUM",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "LINETRADEDISCOUNTS",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "LINETRADEDISCOUNTS",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "RESONCODE",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "RESONCODE",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "BONGROUP",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "BONGROUP",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "BONVAL",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "BONVAL",
+											"type": "String",
+											"physicalType": "String"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SalesNewFile2",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "blobSalesNew2Targets",
+								"type": "DatasetReference",
+								"parameters": {
+									"FileName": "@variables('SalesFileName')"
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"variables": {
+					"RunDate": {
+						"type": "String",
+						"defaultValue": "18/01/2020"
+					},
+					"SalesFileName": {
+						"type": "String",
+						"defaultValue": "sales_18012020"
+					}
+				},
+				"folder": {
+					"name": "Blob"
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-06-14T15:06:16Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SuperPharmInventory')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "sp_DWH_SuperPharmFactInventory",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Copy_SuperPharmData",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[sp_DWH_SuperPharmFactInventory]"
+						},
+						"linkedServiceName": {
+							"referenceName": "dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Copy_SuperPharmData",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "FileServerReadSettings",
+									"recursive": true,
+									"modifiedDatetimeStart": {
+										"value": "@getPastTime(31,'Day')",
+										"type": "Expression"
+									},
+									"wildcardFileName": "*",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"preCopyScript": "TRUNCATE TABLE dbo.MRR_SuperPharmData",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false,
+								"tableOption": "autoCreate",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "DtDate",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "DtDate",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "SupplierId",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "SupplierId",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "ManufacturerId",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "ManufacturerId",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "DepartmentId",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "DepartmentId",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "ItemBarcode",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "ItemBarcode",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "IstoreId",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "IstoreId",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Quantity",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Quantity",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Sales",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Sales",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "StockQty",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "StockQty",
+											"type": "String",
+											"physicalType": "String"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SuperPharmData",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DWH_Dynamic",
+								"type": "DatasetReference",
+								"parameters": {
+									"TableName": "MRR_SuperPharmData"
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Super Pharm"
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-07-02T10:37:45Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SuperPharmSales')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "sp_STG_SuperPharmFactSales",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Copy_SuperPharmSales",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[sp_STG_SuperPharmFactSales]"
+						},
+						"linkedServiceName": {
+							"referenceName": "dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Copy_SuperPharmSales",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "FileServerReadSettings",
+									"recursive": true,
+									"modifiedDatetimeStart": {
+										"value": "@getPastTime(24,'Hour')",
+										"type": "Expression"
+									},
+									"wildcardFileName": "*",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"preCopyScript": "TRUNCATE TABLE dbo.MRR_SuperPharmSales",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false,
+								"tableOption": "autoCreate",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "DtDate",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "DtDate",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "SupplierId",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "SupplierId",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "ManufacturerId",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "ManufacturerId",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "DepartmentId",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "DepartmentId",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "ItemBarcode",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "ItemBarcode",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "IstoreId",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "IstoreId",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Quantity",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Quantity",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Sales",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Sales",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "StockQty",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "StockQty",
+											"type": "String",
+											"physicalType": "String"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SuperPharmData",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DWH_Dynamic",
+								"type": "DatasetReference",
+								"parameters": {
+									"TableName": "MRR_SuperPharmSales"
+								}
+							}
+						]
+					},
+					{
+						"name": "sp_DWH_SuperPharmFactSales",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "sp_STG_SuperPharmFactSales",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[sp_DWH_SuperPharmFactSales]"
+						},
+						"linkedServiceName": {
+							"referenceName": "dwh",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Super Pharm"
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-07-02T10:37:45Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WMS Daily Main Run')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "sp_DWH_WMS_Daily",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Copy_WMS_Daily",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[sp_DWH_WMS_Daily]"
+						},
+						"linkedServiceName": {
+							"referenceName": "dwh",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Copy_WMS_Daily",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "with CTE_LOADS as\n(\nSELECT\n\t   [CONSIGNEE] AS 'סוג מאחסן'\n      ,[SKU] AS 'מספר פריט'\n      ,[STATUS] AS 'סטטוס במלאי'\n\t  ,SUM([UNITS]) AS 'מלאי עדכני'\n\nFROM [SCEXPERT].[dbo].[LOADS]\n\nWHERE 1=1\nand (STATUS = 'NANG' OR STATUS ='NAGO' OR STATUS ='AVAILABLE' OR STATUS ='BOOKED' OR STATUS ='ANGO')\nand [CONSIGNEE] in ('10')\nand [SKU] not like '8%'\ngroup by [CONSIGNEE], [SKU], [STATUS]\n)\n\nselect CTE_LOADS.*\n\t  ,sku.SKUSHORTDESC\n\t  ,sku.MANUFACTURERSKU\n\t  ,sku.BASEITEM\nfrom CTE_LOADS left join SKU sku on CTE_LOADS.[מספר פריט] = sku.SKU",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"preCopyScript": "truncate table MRR_WMS_Daily",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false,
+								"tableOption": "autoCreate",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "סוג מאחסן",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "סוג מאחסן",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "מספר פריט",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "מספר פריט",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "סטטוס במלאי",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "סטטוס במלאי",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "מלאי עדכני",
+											"type": "Decimal",
+											"physicalType": "decimal",
+											"scale": 4,
+											"precision": 38
+										},
+										"sink": {
+											"name": "מלאי עדכני",
+											"type": "Decimal",
+											"physicalType": "Decimal"
+										}
+									},
+									{
+										"source": {
+											"name": "SKUSHORTDESC",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "SKUSHORTDESC",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "MANUFACTURERSKU",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "MANUFACTURERSKU",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "BASEITEM",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "BASEITEM",
+											"type": "String",
+											"physicalType": "String"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "WMS",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "MRR_WMS_Eroz_Daily",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "WMS Daily"
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-06-22T15:06:14Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WMS_Daily')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy WMS_Daily",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "with CTE_LOADS as\n(\nSELECT\n\t   [CONSIGNEE] AS 'סוג מאחסן'\n      ,[SKU] AS 'מספר פריט'\n      ,[STATUS] AS 'סטטוס במלאי'\n\t  ,SUM([UNITS]) AS 'מלאי עדכני'\n\nFROM [SCEXPERT].[dbo].[LOADS]\n\nWHERE 1=1\nand (STATUS = 'NANG' OR STATUS ='NAGO' OR STATUS ='AVAILABLE' OR STATUS ='BOOKED' OR STATUS ='ANGO')\nand [CONSIGNEE] in ('10')\nand [SKU] not like '8%'\ngroup by [CONSIGNEE], [SKU], [STATUS]\n)\n\nselect CTE_LOADS.*\n\t  ,sku.SKUSHORTDESC\n\t  ,sku.MANUFACTURERSKU\n\t  ,sku.BASEITEM\nfrom CTE_LOADS left join SKU sku on CTE_LOADS.[מספר פריט] = sku.SKU",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"preCopyScript": "truncate table MRR_WMS_Daily",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false,
+								"tableOption": "autoCreate",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "סוג מאחסן",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "סוג מאחסן",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "מספר פריט",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "מספר פריט",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "סטטוס במלאי",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "סטטוס במלאי",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "מלאי עדכני",
+											"type": "Decimal",
+											"physicalType": "decimal",
+											"scale": 4,
+											"precision": 38
+										},
+										"sink": {
+											"name": "מלאי עדכני",
+											"type": "Decimal",
+											"physicalType": "Decimal"
+										}
+									},
+									{
+										"source": {
+											"name": "SKUSHORTDESC",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "SKUSHORTDESC",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "MANUFACTURERSKU",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "MANUFACTURERSKU",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "BASEITEM",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "BASEITEM",
+											"type": "String",
+											"physicalType": "String"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "WMS",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "MRR_WMS_Eroz_Daily",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "WMS Daily/WMS"
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-06-21T11:46:16Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WMS_Eroz')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy WMS_Eroz",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "SELECT\n\t   DISTINCT([AUDITID])\n      ,AU.[USERID] AS 'משתמש'\n      ,AU.[ACTIVITYDATE] AS 'זמן הפעולה'\n\t  ,cast(AU.[ACTIVITYDATE] as date) AS 'Date'\n      ,AU.[DOCUMENT] AS 'שם מסמך'\n      ,AU.[DOCUMENTLINE] AS 'שורת מסמך'\n      ,AU.[FROMLOAD] AS 'מטעינה'\n      ,AU.[TOLOAD] AS 'לטעינה'\n      ,AU.[FROMLOC] AS 'ממיקום'\n      ,AU.[TOLOC] AS 'למיקום'\n      ,AU.[FROMQTY] AS 'מכמות'\n      ,AU.[TOCONTAINER] AS 'לקונטיינר'\n\t  ,VS.[SKU] AS 'מספר פריט'\n\t  ,VS.[SKUDESC] AS 'תאור פריט'\n\t  ,OL.ORDERID AS 'מספר הזמנה'\n      ,AU.[TOQTY] AS 'לכמות'\n\t  ,VS.each_in_case -- CHECK IF NULL FOR 1 \n\t  ,ISNULL(VS.each_in_case,1.00)\t\tAS 'גורם אירוז'\n\t  ,FLOOR(AU.TOQTY / ISNULL(VS.each_in_case,1.00) ) AS 'כמות ארגזים'\n\t  ,AU.TOQTY - (ISNULL(VS.each_in_case,1.00) * FLOOR(AU.TOQTY/ ISNULL(VS.each_in_case,1.00) )) AS 'כמות יחידות'\n\nFROM [SCEXPERT].[dbo].[vsku] VS\nLEFT JOIN [SCEXPERT].[dbo].[AUDIT] AU\tON VS.SKU = AU.SKU \nLEFT JOIN [dbo].[ORDERLOADS] OL\t\t\tON OL.PICKLIST = AU.DOCUMENT\nLEFT JOIN [dbo].[SKUUOM] SKUU\t\t\tON SKUU.SKU = VS.SKU\n\nWHERE AU.CONSIGNEE = 'JV'\nAND AU.ACTIVITYTYPE = 'PICKLOAD'",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false,
+								"tableOption": "autoCreate",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "AUDITID",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "AUDITID",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "משתמש",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "משתמש",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "זמן הפעולה",
+											"type": "DateTime",
+											"physicalType": "datetime"
+										},
+										"sink": {
+											"name": "זמן הפעולה",
+											"type": "DateTime",
+											"physicalType": "DateTime"
+										}
+									},
+									{
+										"source": {
+											"name": "Date",
+											"type": "DateTime",
+											"physicalType": "date"
+										},
+										"sink": {
+											"name": "Date",
+											"type": "DateTime",
+											"physicalType": "DateTime"
+										}
+									},
+									{
+										"source": {
+											"name": "שם מסמך",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "שם מסמך",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "שורת מסמך",
+											"type": "Int32",
+											"physicalType": "int"
+										},
+										"sink": {
+											"name": "שורת מסמך",
+											"type": "Int32",
+											"physicalType": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "מטעינה",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "מטעינה",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "לטעינה",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "לטעינה",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "ממיקום",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "ממיקום",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "למיקום",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "למיקום",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "מכמות",
+											"type": "Decimal",
+											"physicalType": "decimal",
+											"scale": 4,
+											"precision": 18
+										},
+										"sink": {
+											"name": "מכמות",
+											"type": "Decimal",
+											"physicalType": "Decimal"
+										}
+									},
+									{
+										"source": {
+											"name": "לקונטיינר",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "לקונטיינר",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "מספר פריט",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "מספר פריט",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "תאור פריט",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "תאור פריט",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "מספר הזמנה",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "מספר הזמנה",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "לכמות",
+											"type": "Decimal",
+											"physicalType": "decimal",
+											"scale": 4,
+											"precision": 18
+										},
+										"sink": {
+											"name": "לכמות",
+											"type": "Decimal",
+											"physicalType": "Decimal"
+										}
+									},
+									{
+										"source": {
+											"name": "each_in_case",
+											"type": "Int32",
+											"physicalType": "int"
+										},
+										"sink": {
+											"name": "each_in_case",
+											"type": "Int32",
+											"physicalType": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "גורם אירוז",
+											"type": "Int32",
+											"physicalType": "int"
+										},
+										"sink": {
+											"name": "גורם אירוז",
+											"type": "Int32",
+											"physicalType": "Int32"
+										}
+									},
+									{
+										"source": {
+											"name": "כמות ארגזים",
+											"type": "Decimal",
+											"physicalType": "decimal",
+											"scale": 0,
+											"precision": 29
+										},
+										"sink": {
+											"name": "כמות ארגזים",
+											"type": "Decimal",
+											"physicalType": "Decimal"
+										}
+									},
+									{
+										"source": {
+											"name": "כמות יחידות",
+											"type": "Decimal",
+											"physicalType": "decimal",
+											"scale": 0,
+											"precision": 38
+										},
+										"sink": {
+											"name": "כמות יחידות",
+											"type": "Decimal",
+											"physicalType": "Decimal"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "WMS",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "MRR_WMS_Eroz",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Eroz/WMS"
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-06-21T10:20:24Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dimCav Mirror To Blob')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Items Copy To blob",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.02:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "FileServerReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ItemsFile",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "blobdimTargets",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "customer Copy To blob",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.02:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "FileServerReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "CustFile",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "blobdimTargets",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Blob"
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-06-14T15:06:16Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Dim Tables Run')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Agents Main Run",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Agents Main Run",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Branches Main Run",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Branches Main Run",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Customers Main Run",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Customers Main Run",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Daily Run",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Daily Run",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Items Main Run",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Items Main Run",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "RLS Main Run",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "RLS Main Run",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "MRR_WMSSKU",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "MRR_WMSSKU",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-06-22T06:23:04Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SuperPharm Main')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy_SuperPharmStore",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "ExcelSource",
+								"storeSettings": {
+									"type": "FileServerReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"preCopyScript": "TRUNCATE TABLE dbo.MRR_SuperPharmStore",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false,
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "מס' לקוח",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "מס' לקוח",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "מס' חנות",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "מס' חנות",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "שם חנות",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "שם חנות",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "שם חברה מנהלת",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "שם חברה מנהלת",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "מספר חברה",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "מספר חברה",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "בדיקה",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "בדיקה",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "שם עמית/ה",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "שם עמית/ה",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "מס' טלפון בחנות",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "מס' טלפון בחנות",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "מס' טלפון עמית/ה",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "מס' טלפון עמית/ה",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "דוא\"ל עמית/ה",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "דוא\"ל עמית/ה",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "דוא\"ל מפקידה",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "דוא\"ל מפקידה",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "מ.קוסמטיקה",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "מ.קוסמטיקה",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "מ.מסחרי",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "מ.מסחרי",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "מ.כללי",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "מ.כללי",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "כתובת החנות",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "כתובת החנות",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "מזהה לקוח",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "מזהה לקוח",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false,
+									"culture": "en-IL"
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SuperPharmStore",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "MRR_SuperPharmStore",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "SuperPharmInventory",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Copy_SuperPharmStore",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "SuperPharmInventory",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "SuperPharmSales",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Copy_SuperPharmStore",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "SuperPharmSales",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Super Pharm"
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-07-02T10:37:46Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/SuperPharmInventory')]",
+				"[concat(variables('factoryId'), '/pipelines/SuperPharmSales')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Targets Main Run')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CAV_Targets",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "CAV_Targets",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Prio_Targets",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Prio_Targets",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Targets"
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-06-21T12:36:23Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/5 Minutes')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Daily Run",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Week",
+						"interval": 1,
+						"startTime": "2020-07-09T13:00:00Z",
+						"timeZone": "UTC",
+						"schedule": {
+							"minutes": [
+								0,
+								5,
+								15,
+								20,
+								25,
+								30,
+								35,
+								40,
+								45,
+								50,
+								55
+							],
+							"hours": [
+								8,
+								9,
+								10,
+								11,
+								12,
+								13,
+								14,
+								15,
+								16,
+								17,
+								18,
+								19,
+								20
+							],
+							"weekDays": [
+								"Sunday",
+								"Monday",
+								"Tuesday",
+								"Wednesday",
+								"Thursday",
+								"Friday",
+								"Saturday"
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/salesCavDaliy')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "SalesCav Mirror To Blob",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Week",
+						"interval": 1,
+						"startTime": "2020-08-12T11:19:00Z",
+						"timeZone": "UTC",
+						"schedule": {
+							"minutes": [
+								30
+							],
+							"hours": [
+								12,
+								14,
+								16,
+								18,
+								20,
+								8
+							],
+							"weekDays": [
+								"Sunday",
+								"Monday",
+								"Tuesday",
+								"Wednesday",
+								"Thursday",
+								"Friday"
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/SalesCav Mirror To Blob')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Fact Tables Run')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Eroz Main Run",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Eroz Main Run",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Inventory Main Run",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Inventory Main Run",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Inventory_ReturnDestroy Main Run",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Inventory_ReturnDestroy Main Run",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Sales Main Run",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Sales Main Run",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "SuperPharm Main Run",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "SuperPharm Main",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Targets Main Run",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Targets Main Run",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "WMS Daily Main Run",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "WMS Daily Main Run",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-07-02T10:37:46Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/SuperPharm Main')]",
+				"[concat(variables('factoryId'), '/pipelines/Targets Main Run')]",
+				"[concat(variables('factoryId'), '/pipelines/WMS Daily Main Run')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Master Pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "UpScale SQL DWH",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://management.azure.com/subscriptions/81c0a8d3-231c-4899-b0f1-6f41609b9a25/resourceGroups/AlpaRG/providers/Microsoft.Sql/servers/alpa/databases/alpa_dwh?api-version=2021-02-01-preview",
+							"method": "PUT",
+							"headers": {
+								"Content-Type": "application/json"
+							},
+							"body": {
+								"sku": {
+									"name": "S6",
+									"tier": "Standard"
+								},
+								"location": "West Europe"
+							},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://management.azure.com/"
+							}
+						}
+					},
+					{
+						"name": "DownScale SQL DWH",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "PBI DS Refresh",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "EmailNotificition_DimTablesRun",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "EmailNotificition_FactTablesRun",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "EmailNotificition_PBIDSRefresh",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://management.azure.com/subscriptions/81c0a8d3-231c-4899-b0f1-6f41609b9a25/resourceGroups/AlpaRG/providers/Microsoft.Sql/servers/alpa/databases/alpa_dwh?api-version=2021-02-01-preview",
+							"method": "PUT",
+							"headers": {
+								"Content-Type": "application/json"
+							},
+							"body": {
+								"sku": {
+									"name": "S2",
+									"tier": "Standard"
+								},
+								"location": "West Europe"
+							},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://management.azure.com/"
+							}
+						}
+					},
+					{
+						"name": "Dim Tables Run",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "UpScale SQL DWH",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Dim Tables Run",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Fact Tables Run",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Dim Tables Run",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Fact Tables Run",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "PBI DS Refresh",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Fact Tables Run",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "PBI DS Refresh",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "EmailNotificition_DimTablesRun",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Dim Tables Run",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://prod-159.westeurope.logic.azure.com:443/workflows/d4e921696d6b4c90be4875dae6a42580/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=sSD3uRoTQa0fclfsQN-1txzuH4XHFwjmzkPOJ_gN-7E",
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"value": "\"This is a custom dynamic message from your pipeline with run ID @{pipeline().RunId}. Data Factory Name: @{pipeline().DataFactory},\n\npipelineName: @{pipeline().Pipeline}.\nWith the message: @{activity('Dim Tables Run').error.message}\"",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "EmailNotificition_FactTablesRun",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Fact Tables Run",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://prod-159.westeurope.logic.azure.com:443/workflows/d4e921696d6b4c90be4875dae6a42580/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=sSD3uRoTQa0fclfsQN-1txzuH4XHFwjmzkPOJ_gN-7E",
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"value": "\"This is a custom dynamic message from your pipeline with run ID @{pipeline().RunId}. Data Factory Name: @{pipeline().DataFactory},\n\npipelineName: @{pipeline().Pipeline}.\nWith the message: @{activity('Fact Tables Run').error.message}\"",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "EmailNotificition_PBIDSRefresh",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "PBI DS Refresh",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://prod-159.westeurope.logic.azure.com:443/workflows/d4e921696d6b4c90be4875dae6a42580/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=sSD3uRoTQa0fclfsQN-1txzuH4XHFwjmzkPOJ_gN-7E",
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"value": "\"This is a custom dynamic message from your pipeline with run ID @{pipeline().RunId}. Data Factory Name: @{pipeline().DataFactory},\n\npipelineName: @{pipeline().Pipeline}.\nWith the message: @{activity('PBI DS Refresh').error.message}\"",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"variables": {
+					"FailureM": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-07-02T15:54:42Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Dim Tables Run')]",
+				"[concat(variables('factoryId'), '/pipelines/Fact Tables Run')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AlpaCosmetics_DWH_Refresh_1')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Master Pipeline",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2023-06-27T13:05:00",
+						"timeZone": "Israel Standard Time",
+						"schedule": {
+							"minutes": [
+								0
+							],
+							"hours": [
+								9,
+								12,
+								15,
+								18
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Master Pipeline')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AlpaCosmetics_DWH_Refresh_2')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Master Pipeline",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2023-06-27T13:08:00",
+						"timeZone": "Israel Standard Time",
+						"schedule": {
+							"minutes": [
+								30
+							],
+							"hours": [
+								7,
+								10,
+								13,
+								16
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Master Pipeline')]"
+			]
+		}
+	]
+}
