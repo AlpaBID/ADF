@@ -1,13 +1,13 @@
 {
-	"name": "SuperPharmInventory",
+	"name": "WMS Daily",
 	"properties": {
 		"activities": [
 			{
-				"name": "sp_DWH_SuperPharmFactInventory",
+				"name": "sp_DWH_WMS_Daily",
 				"type": "SqlServerStoredProcedure",
 				"dependsOn": [
 					{
-						"activity": "Copy_SuperPharmData",
+						"activity": "Copy_WMS_Daily",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -22,7 +22,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"storedProcedureName": "[dbo].[sp_DWH_SuperPharmFactInventory]"
+					"storedProcedureName": "[dbo].[sp_DWH_WMS_Daily]"
 				},
 				"linkedServiceName": {
 					"referenceName": "dwh",
@@ -30,7 +30,7 @@
 				}
 			},
 			{
-				"name": "Copy_SuperPharmData",
+				"name": "Copy_WMS_Daily",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -43,24 +43,14 @@
 				"userProperties": [],
 				"typeProperties": {
 					"source": {
-						"type": "DelimitedTextSource",
-						"storeSettings": {
-							"type": "FileServerReadSettings",
-							"recursive": true,
-							"modifiedDatetimeStart": {
-								"value": "@getPastTime(31,'Day')",
-								"type": "Expression"
-							},
-							"wildcardFileName": "*",
-							"enablePartitionDiscovery": false
-						},
-						"formatSettings": {
-							"type": "DelimitedTextReadSettings"
-						}
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "with CTE_LOADS as\n(\nSELECT\n\t   [CONSIGNEE] AS 'סוג מאחסן'\n      ,[SKU] AS 'מספר פריט'\n      ,[STATUS] AS 'סטטוס במלאי'\n\t  ,SUM([UNITS]) AS 'מלאי עדכני'\n\nFROM [SCEXPERT].[dbo].[LOADS]\n\nWHERE 1=1\nand (STATUS = 'NANG' OR STATUS ='NAGO' OR STATUS ='AVAILABLE' OR STATUS ='BOOKED' OR STATUS ='ANGO')\nand [CONSIGNEE] in ('10')\nand [SKU] not like '8%'\ngroup by [CONSIGNEE], [SKU], [STATUS]\n)\n\nselect CTE_LOADS.*\n\t  ,sku.SKUSHORTDESC\n\t  ,sku.MANUFACTURERSKU\n\t  ,sku.BASEITEM\nfrom CTE_LOADS left join SKU sku on CTE_LOADS.[מספר פריט] = sku.SKU",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
 					},
 					"sink": {
 						"type": "AzureSqlSink",
-						"preCopyScript": "TRUNCATE TABLE dbo.MRR_SuperPharmData",
+						"preCopyScript": "truncate table MRR_WMS_Daily",
 						"writeBehavior": "insert",
 						"sqlWriterUseTableLock": false,
 						"tableOption": "autoCreate",
@@ -72,108 +62,86 @@
 						"mappings": [
 							{
 								"source": {
-									"name": "DtDate",
+									"name": "סוג מאחסן",
 									"type": "String",
-									"physicalType": "String"
+									"physicalType": "nvarchar"
 								},
 								"sink": {
-									"name": "DtDate",
+									"name": "סוג מאחסן",
 									"type": "String",
 									"physicalType": "String"
 								}
 							},
 							{
 								"source": {
-									"name": "SupplierId",
+									"name": "מספר פריט",
 									"type": "String",
-									"physicalType": "String"
+									"physicalType": "nvarchar"
 								},
 								"sink": {
-									"name": "SupplierId",
+									"name": "מספר פריט",
 									"type": "String",
 									"physicalType": "String"
 								}
 							},
 							{
 								"source": {
-									"name": "ManufacturerId",
+									"name": "סטטוס במלאי",
 									"type": "String",
-									"physicalType": "String"
+									"physicalType": "nvarchar"
 								},
 								"sink": {
-									"name": "ManufacturerId",
+									"name": "סטטוס במלאי",
 									"type": "String",
 									"physicalType": "String"
 								}
 							},
 							{
 								"source": {
-									"name": "DepartmentId",
-									"type": "String",
-									"physicalType": "String"
+									"name": "מלאי עדכני",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 4,
+									"precision": 38
 								},
 								"sink": {
-									"name": "DepartmentId",
+									"name": "מלאי עדכני",
+									"type": "Decimal",
+									"physicalType": "Decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "SKUSHORTDESC",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "SKUSHORTDESC",
 									"type": "String",
 									"physicalType": "String"
 								}
 							},
 							{
 								"source": {
-									"name": "ItemBarcode",
+									"name": "MANUFACTURERSKU",
 									"type": "String",
-									"physicalType": "String"
+									"physicalType": "nvarchar"
 								},
 								"sink": {
-									"name": "ItemBarcode",
+									"name": "MANUFACTURERSKU",
 									"type": "String",
 									"physicalType": "String"
 								}
 							},
 							{
 								"source": {
-									"name": "IstoreId",
+									"name": "BASEITEM",
 									"type": "String",
-									"physicalType": "String"
+									"physicalType": "nvarchar"
 								},
 								"sink": {
-									"name": "IstoreId",
-									"type": "String",
-									"physicalType": "String"
-								}
-							},
-							{
-								"source": {
-									"name": "Quantity",
-									"type": "String",
-									"physicalType": "String"
-								},
-								"sink": {
-									"name": "Quantity",
-									"type": "String",
-									"physicalType": "String"
-								}
-							},
-							{
-								"source": {
-									"name": "Sales",
-									"type": "String",
-									"physicalType": "String"
-								},
-								"sink": {
-									"name": "Sales",
-									"type": "String",
-									"physicalType": "String"
-								}
-							},
-							{
-								"source": {
-									"name": "StockQty",
-									"type": "String",
-									"physicalType": "String"
-								},
-								"sink": {
-									"name": "StockQty",
+									"name": "BASEITEM",
 									"type": "String",
 									"physicalType": "String"
 								}
@@ -188,7 +156,7 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "SuperPharmData",
+						"referenceName": "WMS",
 						"type": "DatasetReference"
 					}
 				],
@@ -197,14 +165,14 @@
 						"referenceName": "DWH_Dynamic",
 						"type": "DatasetReference",
 						"parameters": {
-							"TableName": "MRR_SuperPharmData"
+							"TableName": "MRR_WMS_Daily"
 						}
 					}
 				]
 			}
 		],
 		"folder": {
-			"name": "Fact Table/Super Pharm"
+			"name": "Fact Table/WMS Daily"
 		},
 		"annotations": [],
 		"lastPublishTime": "2023-07-04T11:32:52Z"

@@ -9,7 +9,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "Eroz Main Run",
+						"referenceName": "Eroz",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -22,7 +22,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "Inventory Main Run",
+						"referenceName": "Inventory",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -35,7 +35,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "Inventory_ReturnDestroy Main Run",
+						"referenceName": "Inventory_ReturnDestroy",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -48,7 +48,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "Sales Main Run",
+						"referenceName": "Sales",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -74,7 +74,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "Targets Main Run",
+						"referenceName": "Targets",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -87,15 +87,18 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "WMS Daily Main Run",
+						"referenceName": "WMS Daily",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
 				}
 			}
 		],
+		"folder": {
+			"name": "Fact Table"
+		},
 		"annotations": [],
-		"lastPublishTime": "2023-07-02T10:37:46Z"
+		"lastPublishTime": "2023-07-04T12:00:04Z"
 	},
 	"type": "Microsoft.DataFactory/factories/pipelines"
 }

@@ -22,7 +22,7 @@
 					},
 					"body": {
 						"sku": {
-							"name": "S6",
+							"name": "S2",
 							"tier": "Standard"
 						},
 						"location": "West Europe"
@@ -38,12 +38,6 @@
 				"type": "WebActivity",
 				"dependsOn": [
 					{
-						"activity": "PBI DS Refresh",
-						"dependencyConditions": [
-							"Completed"
-						]
-					},
-					{
 						"activity": "EmailNotificition_DimTablesRun",
 						"dependencyConditions": [
 							"Completed"
@@ -57,6 +51,12 @@
 					},
 					{
 						"activity": "EmailNotificition_PBIDSRefresh",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "PBI DS Refresh",
 						"dependencyConditions": [
 							"Completed"
 						]
@@ -78,7 +78,7 @@
 					},
 					"body": {
 						"sku": {
-							"name": "S2",
+							"name": "S0",
 							"tier": "Standard"
 						},
 						"location": "West Europe"
@@ -124,26 +124,6 @@
 				"typeProperties": {
 					"pipeline": {
 						"referenceName": "Fact Tables Run",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true
-				}
-			},
-			{
-				"name": "PBI DS Refresh",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "Fact Tables Run",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "PBI DS Refresh",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -232,6 +212,26 @@
 						"type": "Expression"
 					}
 				}
+			},
+			{
+				"name": "PBI DS Refresh",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Fact Tables Run",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PBI DS Refresh",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
 			}
 		],
 		"variables": {
@@ -240,7 +240,7 @@
 			}
 		},
 		"annotations": [],
-		"lastPublishTime": "2023-07-02T15:54:42Z"
+		"lastPublishTime": "2023-07-05T06:53:22Z"
 	},
 	"type": "Microsoft.DataFactory/factories/pipelines"
 }

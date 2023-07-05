@@ -817,10 +817,10 @@
 			}
 		],
 		"folder": {
-			"name": "Sales/CAV_Hist"
+			"name": "Fact Table/Sales/CAV_Hist"
 		},
 		"annotations": [],
-		"lastPublishTime": "2023-06-27T12:53:58Z"
+		"lastPublishTime": "2023-07-04T11:32:52Z"
 	},
 	"type": "Microsoft.DataFactory/factories/pipelines"
 }

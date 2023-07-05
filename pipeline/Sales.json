@@ -1,0 +1,1338 @@
+{
+	"name": "Sales",
+	"properties": {
+		"activities": [
+			{
+				"name": "sp_STG_FactSales",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "sp_STG_CAV_FactSales",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Copy_Prio_Sales",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[sp_STG_FactSales]"
+				},
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "sp_DWH_FactSales",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "sp_STG_FactSales",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[sp_DWH_FactSales]"
+				},
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "sp_STG_CAV_FactSales",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Copy_CAV_Sales",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[sp_STG_CAV_FactSales]"
+				},
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Copy_CAV_Orders",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": true,
+							"modifiedDatetimeStart": {
+								"value": "@getPastTime(2,'Year')",
+								"type": "Expression"
+							},
+							"enablePartitionDiscovery": false,
+							"fileFilter": "ASCSVKCSTINV.CSV"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "TRUNCATE TABLE MRR_CAV_Orders",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"tableOption": "autoCreate",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "MR",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "MR",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "FY",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "שנה",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "INVOICE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "INVOICE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "AGENTCODE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "מספר סוכן",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "COIN",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "COIN",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "COINRATE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "COINRATE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "CUSTOMER",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "מספר לקוח",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "INVDATE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "תאריך חשבונית",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "INVPREPARDATE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "INVPREPARDATE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DAYELETCODE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "DAYELETCODE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "TALPANCODE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "TALPANCODE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DISCOUNTPERCENT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "DISCOUNTPERCENT",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DISCOUNTSUM",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "DISCOUNTSUM",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "GROSS",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "GROSS",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "TOTALDUESUM",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "TOTALDUESUM",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "SALEDISCOUNT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "SALEDISCOUNT",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "VAT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "VAT",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "STORE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "STORE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "TRADEDISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "TRADEDISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "AGENTCODETB",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "סוכן",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DAYELETCODETB",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "DAYELETCODETB",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "TALPANCODETB",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "TALPANCODETB",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "DISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "EXTRADISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "EXTRADISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "SALEDISCOUNTSSUM",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "SALEDISCOUNTSSUM",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "INVSDATE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "INVSDATE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "COORDINV",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "מספר חשבונית",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DIARYORDERNUM",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "פקודת יומן",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DIARYORDERDAT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "DIARYORDERDAT",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "DATCLS",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "DATCLS",
+									"type": "String",
+									"physicalType": "String"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "CAV",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DWH_Dynamic",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "MRR_CAV_Orders"
+						}
+					}
+				]
+			},
+			{
+				"name": "Copy_CAV_Sales",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Copy_CAV_Orders",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": true,
+							"modifiedDatetimeStart": {
+								"value": "@getPastTime(2,'Year')",
+								"type": "Expression"
+							},
+							"enablePartitionDiscovery": false,
+							"fileFilter": "ASCSVKCSTINVLN.CSV"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "TRUNCATE TABLE MRR_CAV_Sales",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"tableOption": "autoCreate",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "MR",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "MR",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "FY",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "שנה",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "INVOICE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "INVOICE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "INVLINE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "שורה בחשבונית",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "CASES",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "CASES",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "FACTOR",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "גורם אירוז",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "GROSSPRC1",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "GROSSPRC1",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "GROSSSUM",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "סה\"כ לפני הנחה",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ITEMCODE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "פריט",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "LINENET",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "סה\"כ נטו",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "LINESALEDISCOUNT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "סה\"כ הנחה",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "SINGELQUN",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "כמות",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "GROSSPRC",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "מחיר ליח' לפני הנחה",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "INVPREPARDATE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "תאריך אספקה",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "HAN2",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "HAN2",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "HAN3",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "HAN3",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "HANADDCODE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "HANADDCODE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "HANADDPRECENT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "HANADDPRECENT",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "HANMIVZACODE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "HANMIVZACODE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "HANMIVZAPERCENT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "HANMIVZAPERCENT",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "HANREGULARCODE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "HANREGULARCODE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "HANREGULARPERCENT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "HANREGULARPERCENT",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "LINEDISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "LINEDISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "LINEEXTRADISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "LINEEXTRADISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "LINESALEDISCOUNTSUM",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "LINESALEDISCOUNTSUM",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "LINETRADEDISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "LINETRADEDISCOUNTS",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "RESONCODE",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "RESONCODE",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "BONGROUP",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "BONGROUP",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "BONVAL",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "BONVAL",
+									"type": "String",
+									"physicalType": "String"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "CAV",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DWH_Dynamic",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "MRR_CAV_Sales"
+						}
+					}
+				]
+			},
+			{
+				"name": "Copy_Prio_Sales",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;\n/*\n1-desig\n2-tous\n*/\n-------------------------------------------------1-desig------------------------------------------------\nSELECT \n\n'1' as 'EntityID'\n          ,pt.TRANSACTNUM AS 'חשבונית'\n\t\t--,ii.KLINE AS 'InvoiceLineNumber'\n\t\t,'POS' AS 'DocName'\n\t\t,CAST('1' as varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, pt.CUST)) as varchar)   AS 'AccountKey' \n\n\t\t--choose one of the above , The defauls is uncomment :\n\t\t,CONVERT(SMALLDATETIME, (pt.CURDATE + 46283040) / 1440.0) AS 'Date' -- Invoice date  -- Date from Invoices in case you need just invoices \n\n\t\t,pt.CURTIME AS 'Time'\n\n\t\t,CAST('1' as varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, pti.POS_USERBSALE)) as varchar) AS 'AgentKey' -- the sales representor\n\n\t\t,CAST('1' as varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, pti.PART)) as varchar) AS 'ItemKey'\n\n\n\n\t\t,CAST('1' as varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, pt.BRANCH)) as varchar) AS 'BranchKey'\n\t\t,null as 'EmployeeKey'\n\t\t,pti.CLUB as 'חבר מועדון'\n\n\t\t--,(1 - (1 - ii.[T$PERCENT] / 100) * (1 - i.[T$PERCENT] / 100)) AS 'DiscountPercent' -- the DiscountPercent for the invoice and invoice line\n\n\t\t,ROUND((1-(1-(pti.T$PERCENT/100))*(1-(pti.GENDISCPERC/100)))*(pti.PRICE*(pti.QUANT/1000))/(1+(pti.VATPERCENT/100)),2) AS 'LineTotalDiscount' -- the discount from gross price to the net\n\t\t,ROUND((1-(1-(pti.T$PERCENT/100))*(1-(pti.GENDISCPERC/100)))*(pti.PRICE*(pti.QUANT/1000)),2) as 'LineTotalDiscountVAT'\n\t\t--,ROUND(ii.PRICE, 2) * ii.IEXCHANGE AS 'UnitGrossPrice'\n\t\t,ROUND(pti.PRICE/(1+(pti.VATPERCENT/100)),2) AS 'UnitNetPrice'\n\t\t,pti.PRICE as 'UnitPriceVAT'\n\n\t\t,(pti.QUANT/1000.0) AS 'Quantity'\n\t\t,null as 'factoryQuantity'\n\t\t,null AS 'LineTotalCost' \n\t\t,(1-(pti.T$PERCENT/100))*(1-(pti.GENDISCPERC/100))*(pti.PRICE/(1+(pti.VATPERCENT/100))*(pti.QUANT/1000.0)) AS 'LineTotalNet'\n\t\t--ROUND((pti.IPRICEADISCOUNTBVAT*(pti.QUANT/1000)),2) AS 'LineTotalNet'\n\n\t    ,null AS 'LineTotalNet_USD'\n\t\t,ROUND((pti.IPRICEADISCOUNTBVAT*(pti.QUANT/1000.0)*(1+(pti.VATPERCENT/100))),2) AS 'LineTotalNetVAT'\n\t\t,null AS 'LineTotalNetVAT_USD'\n\t\t,CONVERT(INT, LEFT(CONVERT(VARCHAR, CONVERT(DATETIME, (i.IVDATE + 46283040) / 1440.0), 112), 6)) AS YearMonth\n\t\t,null as 'סטטוס'\n\t\t,null  as 'ChargeFlag'  \n\t\t,null as 'סטטוס ליקוט כותרת'\n\t    ,null  as 'סטטוס ליקוט שורה'\n\t\t,null  as 'דגל סטורנו'\n\t\t\n\t\t,GETDATE() AS RowInsertDatetime\n\n\nfrom [desig].[dbo].POS_TRANSACTIONS pt \nleft join  [desig].[dbo].POS_TRANSACTITEMS pti on pti.TRANSACT=pt.TRANSACT\nleft join [desig].[dbo].PART p on p.PART=pti.PART\n--left join [desig].[dbo].Costs cost on cost.CURDATE=pt.CURDATE and cost.ItemID=pti.PART\nleft join [desig].[dbo].INVOICES i on i.IV=pti.IV\n\t\t\t\nWHERE 1=1 \nAND (pt.CURDATE <> 51852960 and CONVERT(SMALLDATETIME, (pt.CURDATE + 46283040) / 1440.0) >= DATEADD(yy,DATEDIFF(yy,0,GETDATE())-3,0))\n--and pti.PART <> ''\n--and pt.TRANSACTNUM <> 'C498T000056'\n-------------------------------------------------2-tous------------------------------------------------\nunion all\n\nSELECT \n\n'2' as 'EntityID'\n          ,pt.TRANSACTNUM AS 'חשבונית'\n\t\t--,ii.KLINE AS 'InvoiceLineNumber'\n\t\t,'POS' AS 'DocName'\n\t\t,CAST('2' as varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, pt.CUST)) as varchar)   AS 'AccountKey' \n\n\t\t--choose one of the above , The defauls is uncomment :\n\t\t,CONVERT(SMALLDATETIME, (pt.CURDATE + 46283040) / 1440.0) AS 'Date' -- Invoice date  -- Date from Invoices in case you need just invoices \n\n\t\t,pt.CURTIME AS 'Time'\n\n\t\t,CAST('2' as varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, pti.POS_USERBSALE)) as varchar) AS 'AgentKey' -- the sales representor\n\n\t\t,CAST('2' as varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, pti.PART)) as varchar) AS 'ItemKey'\n\n\n\n\t\t,CAST('2' as varchar) + CAST(CONVERT(INT, CONVERT(VARCHAR, pt.BRANCH)) as varchar) AS 'BranchKey'\n\t\t,null as 'EmployeeKey'\n\t\t,null as 'חבר מועדון'\n\n\t\t--,(1 - (1 - ii.[T$PERCENT] / 100) * (1 - i.[T$PERCENT] / 100)) AS 'DiscountPercent' -- the DiscountPercent for the invoice and invoice line\n\n\t\t,ROUND((1-(1-(pti.T$PERCENT/100))*(1-(pti.GENDISCPERC/100)))*(pti.PRICE*(pti.QUANT/1000))/(1+(pti.VATPERCENT/100)),2) AS 'LineTotalDiscount' -- the discount from gross price to the net\n\t\t,ROUND((1-(1-(pti.T$PERCENT/100))*(1-(pti.GENDISCPERC/100)))*(pti.PRICE*(pti.QUANT/1000)),2) as 'LineTotalDiscountVAT'\n\t\t--,ROUND(ii.PRICE, 2) * ii.IEXCHANGE AS 'UnitGrossPrice'\n\t\t,ROUND(pti.PRICE/(1+(pti.VATPERCENT/100)),2) AS 'UnitNetPrice'\n\t\t,pti.PRICE as 'UnitPriceVAT'\n\n\t\t,(pti.QUANT/1000.0) AS 'Quantity'\n\t\t,null as 'factoryQuantity'\n\t\t,null AS 'LineTotalCost' \n\t\t,(1-(pti.T$PERCENT/100))*(1-(pti.GENDISCPERC/100))*(pti.PRICE/(1+(pti.VATPERCENT/100))*(pti.QUANT/1000.0)) AS 'LineTotalNet'\n\t\t--ROUND((pti.IPRICEADISCOUNTBVAT*(pti.QUANT/1000)),2) AS 'LineTotalNet'\n\n\t    ,null AS 'LineTotalNet_USD'\n\t\t,ROUND((pti.IPRICEADISCOUNTBVAT*(pti.QUANT/1000.0)*(1+(pti.VATPERCENT/100))),2) AS 'LineTotalNetVAT'\n\t\t,null AS 'LineTotalNetVAT_USD'\n\t\t,CONVERT(INT, LEFT(CONVERT(VARCHAR, CONVERT(DATETIME, (i.IVDATE + 46283040) / 1440.0), 112), 6)) AS YearMonth\n\t\t,null as 'סטטוס'\n\t\t,null  as 'ChargeFlag'  \n\t\t,null as 'סטטוס ליקוט כותרת'\n\t    ,null  as 'סטטוס ליקוט שורה'\n\t\t,null  as 'דגל סטורנו'\n\t\t\n\t\t,GETDATE() AS RowInsertDatetime\n\n\nfrom [tous].[dbo].POS_TRANSACTIONS pt \nleft join  [tous].[dbo].POS_TRANSACTITEMS pti on pti.TRANSACT=pt.TRANSACT\nleft join [tous].[dbo].PART p on p.PART=pti.PART\n--left join [tous].[dbo].Costs cost on cost.CURDATE=pt.CURDATE and cost.ItemID=pti.PART\nleft join [tous].[dbo].INVOICES i on i.IV=pti.IV\n\t\t\t\nWHERE 1=1 \nAND CONVERT(SMALLDATETIME, (pt.CURDATE + 46283040) / 1440.0) >= DATEADD(yy,DATEDIFF(yy,0,GETDATE())-3,0)\n--and pti.PART <> ''",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "TRUNCATE TABLE MRR_Prio_Sales",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"tableOption": "autoCreate",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "חשבונית",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "חשבונית",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "DocName",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "DocName",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "AccountKey",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "AccountKey",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Date",
+									"type": "DateTime",
+									"physicalType": "smalldatetime"
+								},
+								"sink": {
+									"name": "Date",
+									"type": "DateTime",
+									"physicalType": "smalldatetime"
+								}
+							},
+							{
+								"source": {
+									"name": "Time",
+									"type": "Int64",
+									"physicalType": "bigint"
+								},
+								"sink": {
+									"name": "Time",
+									"type": "Int64",
+									"physicalType": "bigint"
+								}
+							},
+							{
+								"source": {
+									"name": "AgentKey",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "AgentKey",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "ItemKey",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "ItemKey",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "BranchKey",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "BranchKey",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "EmployeeKey",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "EmployeeKey",
+									"type": "Int32",
+									"physicalType": "int"
+								}
+							},
+							{
+								"source": {
+									"name": "חבר מועדון",
+									"type": "Int64",
+									"physicalType": "bigint"
+								},
+								"sink": {
+									"name": "חבר מועדון",
+									"type": "Int64",
+									"physicalType": "bigint"
+								}
+							},
+							{
+								"source": {
+									"name": "LineTotalDiscount",
+									"type": "Double",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "LineTotalDiscount",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "LineTotalDiscountVAT",
+									"type": "Double",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "LineTotalDiscountVAT",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "UnitNetPrice",
+									"type": "Double",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "UnitNetPrice",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "UnitPriceVAT",
+									"type": "Double",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "UnitPriceVAT",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "Quantity",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 6,
+									"precision": 26
+								},
+								"sink": {
+									"name": "Quantity",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 6,
+									"precision": 26
+								}
+							},
+							{
+								"source": {
+									"name": "factoryQuantity",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "factoryQuantity",
+									"type": "Int32",
+									"physicalType": "int"
+								}
+							},
+							{
+								"source": {
+									"name": "LineTotalCost",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "LineTotalCost",
+									"type": "Int32",
+									"physicalType": "int"
+								}
+							},
+							{
+								"source": {
+									"name": "LineTotalNet",
+									"type": "Double",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "LineTotalNet",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "LineTotalNet_USD",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "LineTotalNet_USD",
+									"type": "Int32",
+									"physicalType": "int"
+								}
+							},
+							{
+								"source": {
+									"name": "LineTotalNetVAT",
+									"type": "Double",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "LineTotalNetVAT",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "LineTotalNetVAT_USD",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "LineTotalNetVAT_USD",
+									"type": "Int32",
+									"physicalType": "int"
+								}
+							},
+							{
+								"source": {
+									"name": "YearMonth",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "YearMonth",
+									"type": "Int32",
+									"physicalType": "int"
+								}
+							},
+							{
+								"source": {
+									"name": "סטטוס",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "סטטוס",
+									"type": "Int32",
+									"physicalType": "int"
+								}
+							},
+							{
+								"source": {
+									"name": "ChargeFlag",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "ChargeFlag",
+									"type": "Int32",
+									"physicalType": "int"
+								}
+							},
+							{
+								"source": {
+									"name": "סטטוס ליקוט כותרת",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "סטטוס ליקוט כותרת",
+									"type": "Int32",
+									"physicalType": "int"
+								}
+							},
+							{
+								"source": {
+									"name": "סטטוס ליקוט שורה",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "סטטוס ליקוט שורה",
+									"type": "Int32",
+									"physicalType": "int"
+								}
+							},
+							{
+								"source": {
+									"name": "דגל סטורנו",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "דגל סטורנו",
+									"type": "Int32",
+									"physicalType": "int"
+								}
+							},
+							{
+								"source": {
+									"name": "RowInsertDatetime",
+									"type": "DateTime",
+									"physicalType": "datetime"
+								},
+								"sink": {
+									"name": "RowInsertDatetime",
+									"type": "DateTime",
+									"physicalType": "datetime"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Source_Priority",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "[dbo].PART"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DWH_Dynamic",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "MRR_Prio_Sales"
+						}
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Fact Table/Sales"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-07-04T12:00:03Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

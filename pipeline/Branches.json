@@ -1,0 +1,217 @@
+{
+	"name": "Branches",
+	"properties": {
+		"activities": [
+			{
+				"name": "sp_DWH_DimBranches",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Copy_Prio_Branches",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[sp_DWH_DimBranches]"
+				},
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Copy_Prio_Branches",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;\n\n/*\n1-desig\n2-tous\n*/\n-------------------------------------------------1-desig------------------------------------------------\n\nSELECT distinct\n'1' as 'EntityID'\n,CAST('1' as varchar) + cast(CONVERT(INT, CONVERT(VARCHAR, b.BRANCH))as varchar) AS  'BranchKey'\n,b.BRANCHNAME 'מספר סניף'\n\t,CASE WHEN b.BRANCH = 0\n\t\t\t\tTHEN 'ללא סניף'\n\t\t\tELSE system.dbo.tabula_hebconvert(BRANCHDES)\n\t\t\tEND AS 'סניף'\n,BRANCHNAME   + ' | ' +  system.dbo.tabula_hebconvert(b.BRANCHDES) AS 'מזהה סניף'\n--,pn.SUBNETWORKCODE as 'קוד תת רשת'\n\t,b.STATE 'ישוב'\n\n\n\t\t,NULL AS 'מטר רבוע'\n   ,system.dbo.tabula_hebconvert(d.DISTRICTDES) as 'איזור'\n\t\t,pn.SUBNETWORKDES as 'תת רשת'\n\t\t\n\t\t,GETDATE() AS RowInsertDatetim\n\n\n\nFROM [desig].[dbo].BRANCHES b\nleft join [desig].[dbo].DISTRICTS d on d.DISTRICT=b.DISTRICT\nleft join [desig].[dbo].POS_SUBNETWORKS pn on pn.SUBNETWORK=b.POS_SUBNETWORK\nleft join [desig].[dbo].WAREHOUSES w on w.WARHS=b.WARHS\n\nWHERE 1=1\nand b.BRANCHDES <>''\n\n\n-------------------------------------------------2-tous------------------------------------------------\nunion all\n\n\nSELECT distinct\n'2' as 'EntityID'\n,CAST('2' as varchar) + cast(CONVERT(INT, CONVERT(VARCHAR, b.BRANCH))as varchar) AS  'BranchKey'\n,b.BRANCHNAME 'מספר סניף'\n\t,CASE WHEN b.BRANCH = 0\n\t\t\t\tTHEN 'ללא סניף'\n\t\t\tELSE system.dbo.tabula_hebconvert(BRANCHDES)\n\t\t\tEND AS 'סניף'\n,BRANCHNAME   + ' | ' +  system.dbo.tabula_hebconvert(b.BRANCHDES) AS 'מזהה סניף'\n--,pn.SUBNETWORKCODE as 'קוד תת רשת'\n\t,b.STATE 'ישוב'\n\n\n\t\t,NULL AS 'מטר רבוע'\n   ,system.dbo.tabula_hebconvert(d.DISTRICTDES) as 'איזור'\n\t\t,pn.SUBNETWORKDES as 'תת רשת'\n\t\t\n\t\t,GETDATE() AS RowInsertDatetim\n\n\n\nFROM [tous].[dbo].BRANCHES b\nleft join [tous].[dbo].DISTRICTS d on d.DISTRICT=b.DISTRICT\nleft join [tous].[dbo].POS_SUBNETWORKS pn on pn.SUBNETWORK=b.POS_SUBNETWORK\nleft join [tous].[dbo].WAREHOUSES w on w.WARHS=b.WARHS\n\nWHERE 1=1\nand b.BRANCHDES <>''",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "truncate table MRR_Prio_Branches",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "BranchKey",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "BranchKey",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "מספר סניף",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מספר סניף",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "סניף",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "סניף",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "מזהה סניף",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "מזהה סניף",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ישוב",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "ישוב",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "מטר רבוע",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "מטר רבוע",
+									"type": "Int32",
+									"physicalType": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "איזור",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "איזור",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "תת רשת",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"name": "תת רשת",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "RowInsertDatetim",
+									"type": "DateTime",
+									"physicalType": "datetime"
+								},
+								"sink": {
+									"name": "RowInsertDatetim",
+									"type": "DateTime",
+									"physicalType": "DateTime"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Source_Priority",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "[dbo].PART"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DWH_Dynamic",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "MRR_Prio_Branches"
+						}
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Dim Tables/Branches"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-07-04T12:00:03Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

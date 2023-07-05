@@ -1,0 +1,338 @@
+{
+	"name": "RLS",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy_RLS_Agents",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ExcelSource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false,
+							"fileFilter": "RLS_Agents.xlsx"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "truncate table MRR_RLS_Agents",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "סמ\" סוכן",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "סמ\" סוכן",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "BI_USER",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "BI_USER",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "שם סוכן",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "שם סוכן",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "שם מנהל",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "שם מנהל",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "חטיבה",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "חטיבה",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "יוזר מנהל",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "יוזר מנהל",
+									"type": "String",
+									"physicalType": "String"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "CAV_RLS",
+						"type": "DatasetReference",
+						"parameters": {
+							"filename": "RLS_Agents.xlsx"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DWH_Dynamic",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "MRR_RLS_Agents"
+						}
+					}
+				]
+			},
+			{
+				"name": "Copy_RLS_Cosmetics",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ExcelSource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false,
+							"fileFilter": "RLS_Cosmetics.xlsx"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "truncate table MRR_RLS_Cosmetics",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "EntityID",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "חטיבה",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "חטיבה",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "PBIUser",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "PBIUser",
+									"type": "String",
+									"physicalType": "String"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "CAV_RLS",
+						"type": "DatasetReference",
+						"parameters": {
+							"filename": "RLS_Cosmetics.xlsx"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DWH_Dynamic",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "MRR_RLS_Cosmetics"
+						}
+					}
+				]
+			},
+			{
+				"name": "Copy_RLS_Retail",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ExcelSource",
+						"storeSettings": {
+							"type": "FileServerReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false,
+							"fileFilter": "RLS_Retail.xlsx"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "truncate table MRR_RLS_Retail",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"tableOption": "autoCreate",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "שם רשת",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "שם רשת",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "קוד רשת",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "קוד רשת",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "PBI User",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "PBI User",
+									"type": "String",
+									"physicalType": "String"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "CAV_RLS",
+						"type": "DatasetReference",
+						"parameters": {
+							"filename": "RLS_Retail.xlsx"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DWH_Dynamic",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "MRR_RLS_Retail"
+						}
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Dim Tables/RLS"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-07-04T12:00:03Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

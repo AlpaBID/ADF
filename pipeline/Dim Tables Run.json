@@ -5,11 +5,18 @@
 			{
 				"name": "Agents Main Run",
 				"type": "ExecutePipeline",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "RLS Main Run",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "Agents Main Run",
+						"referenceName": "Agents",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -22,7 +29,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "Branches Main Run",
+						"referenceName": "Branches",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -35,20 +42,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "Customers Main Run",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true
-				}
-			},
-			{
-				"name": "Daily Run",
-				"type": "ExecutePipeline",
-				"dependsOn": [],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "Daily Run",
+						"referenceName": "Customers",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -61,7 +55,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "Items Main Run",
+						"referenceName": "Items",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -74,7 +68,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "RLS Main Run",
+						"referenceName": "RLS",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -92,10 +86,33 @@
 					},
 					"waitOnCompletion": true
 				}
+			},
+			{
+				"name": "SQL_DimDates",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[sp_SQL_DimDates]"
+				},
+				"linkedServiceName": {
+					"referenceName": "dwh",
+					"type": "LinkedServiceReference"
+				}
 			}
 		],
+		"folder": {
+			"name": "Dim Tables"
+		},
 		"annotations": [],
-		"lastPublishTime": "2023-06-22T06:23:04Z"
+		"lastPublishTime": "2023-07-04T15:22:00Z"
 	},
 	"type": "Microsoft.DataFactory/factories/pipelines"
 }

@@ -578,17 +578,20 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "MRR_WMSSKU",
-						"type": "DatasetReference"
+						"referenceName": "DWH_Dynamic",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "MRR_WMSSKU"
+						}
 					}
 				]
 			}
 		],
 		"folder": {
-			"name": "SKU"
+			"name": "Dim Tables/SKU"
 		},
 		"annotations": [],
-		"lastPublishTime": "2023-06-22T09:31:10Z"
+		"lastPublishTime": "2023-07-04T12:00:03Z"
 	},
 	"type": "Microsoft.DataFactory/factories/pipelines"
 }

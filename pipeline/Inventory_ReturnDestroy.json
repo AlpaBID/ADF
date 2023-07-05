@@ -1,13 +1,13 @@
 {
-	"name": "SuperPharmSales",
+	"name": "Inventory_ReturnDestroy",
 	"properties": {
 		"activities": [
 			{
-				"name": "sp_STG_SuperPharmFactSales",
+				"name": "sp_Inventory_ReturnDestroy Main Run",
 				"type": "SqlServerStoredProcedure",
 				"dependsOn": [
 					{
-						"activity": "Copy_SuperPharmSales",
+						"activity": "Copy_CAV_Inventory_ReturnDestroy",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -22,7 +22,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"storedProcedureName": "[dbo].[sp_STG_SuperPharmFactSales]"
+					"storedProcedureName": "[dbo].[sp_DWH_Inventory_ReturnDestroy]"
 				},
 				"linkedServiceName": {
 					"referenceName": "dwh",
@@ -30,7 +30,7 @@
 				}
 			},
 			{
-				"name": "Copy_SuperPharmSales",
+				"name": "Copy_CAV_Inventory_ReturnDestroy",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -51,8 +51,8 @@
 								"value": "@getPastTime(24,'Hour')",
 								"type": "Expression"
 							},
-							"wildcardFileName": "*",
-							"enablePartitionDiscovery": false
+							"enablePartitionDiscovery": false,
+							"fileFilter": "ASCMLIITR.CSV"
 						},
 						"formatSettings": {
 							"type": "DelimitedTextReadSettings"
@@ -60,7 +60,7 @@
 					},
 					"sink": {
 						"type": "AzureSqlSink",
-						"preCopyScript": "TRUNCATE TABLE dbo.MRR_SuperPharmSales",
+						"preCopyScript": "TRUNCATE TABLE [MRR_CAV_Inventory_ReturnDestroy]",
 						"writeBehavior": "insert",
 						"sqlWriterUseTableLock": false,
 						"tableOption": "autoCreate",
@@ -72,110 +72,82 @@
 						"mappings": [
 							{
 								"source": {
-									"name": "DtDate",
+									"name": "MRX",
 									"type": "String",
 									"physicalType": "String"
 								},
 								"sink": {
-									"name": "DtDate",
-									"type": "String",
-									"physicalType": "String"
+									"name": "MRX",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 0,
+									"precision": 8
 								}
 							},
 							{
 								"source": {
-									"name": "SupplierId",
+									"name": "ITM",
 									"type": "String",
 									"physicalType": "String"
 								},
 								"sink": {
-									"name": "SupplierId",
+									"name": "ITM",
 									"type": "String",
-									"physicalType": "String"
+									"physicalType": "nvarchar"
 								}
 							},
 							{
 								"source": {
-									"name": "ManufacturerId",
+									"name": "STOR",
 									"type": "String",
 									"physicalType": "String"
 								},
 								"sink": {
-									"name": "ManufacturerId",
-									"type": "String",
-									"physicalType": "String"
+									"name": "STOR",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 0,
+									"precision": 9
 								}
 							},
 							{
 								"source": {
-									"name": "DepartmentId",
+									"name": "ITUR",
 									"type": "String",
 									"physicalType": "String"
 								},
 								"sink": {
-									"name": "DepartmentId",
-									"type": "String",
-									"physicalType": "String"
+									"name": "ITUR",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 0,
+									"precision": 3
 								}
 							},
 							{
 								"source": {
-									"name": "ItemBarcode",
+									"name": "QUN",
 									"type": "String",
 									"physicalType": "String"
 								},
 								"sink": {
-									"name": "ItemBarcode",
-									"type": "String",
-									"physicalType": "String"
+									"name": "QUN",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 0,
+									"precision": 30
 								}
 							},
 							{
 								"source": {
-									"name": "IstoreId",
+									"name": "MLIDAT",
 									"type": "String",
 									"physicalType": "String"
 								},
 								"sink": {
-									"name": "IstoreId",
-									"type": "String",
-									"physicalType": "String"
-								}
-							},
-							{
-								"source": {
-									"name": "Quantity",
-									"type": "String",
-									"physicalType": "String"
-								},
-								"sink": {
-									"name": "Quantity",
-									"type": "String",
-									"physicalType": "String"
-								}
-							},
-							{
-								"source": {
-									"name": "Sales",
-									"type": "String",
-									"physicalType": "String"
-								},
-								"sink": {
-									"name": "Sales",
-									"type": "String",
-									"physicalType": "String"
-								}
-							},
-							{
-								"source": {
-									"name": "StockQty",
-									"type": "String",
-									"physicalType": "String"
-								},
-								"sink": {
-									"name": "StockQty",
-									"type": "String",
-									"physicalType": "String"
+									"name": "MLIDAT",
+									"type": "DateTime",
+									"physicalType": "date"
 								}
 							}
 						],
@@ -188,7 +160,7 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "SuperPharmData",
+						"referenceName": "CAV",
 						"type": "DatasetReference"
 					}
 				],
@@ -197,44 +169,17 @@
 						"referenceName": "DWH_Dynamic",
 						"type": "DatasetReference",
 						"parameters": {
-							"TableName": "MRR_SuperPharmSales"
+							"TableName": "MRR_CAV_Inventory_ReturnDestroy"
 						}
 					}
 				]
-			},
-			{
-				"name": "sp_DWH_SuperPharmFactSales",
-				"type": "SqlServerStoredProcedure",
-				"dependsOn": [
-					{
-						"activity": "sp_STG_SuperPharmFactSales",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"storedProcedureName": "[dbo].[sp_DWH_SuperPharmFactSales]"
-				},
-				"linkedServiceName": {
-					"referenceName": "dwh",
-					"type": "LinkedServiceReference"
-				}
 			}
 		],
 		"folder": {
-			"name": "Fact Table/Super Pharm"
+			"name": "Fact Table/Inventory Return\\Destroy"
 		},
 		"annotations": [],
-		"lastPublishTime": "2023-07-04T15:31:03Z"
+		"lastPublishTime": "2023-07-04T12:00:03Z"
 	},
 	"type": "Microsoft.DataFactory/factories/pipelines"
 }

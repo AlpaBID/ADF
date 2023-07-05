@@ -243,8 +243,11 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "MRR_SuperPharmStore",
-						"type": "DatasetReference"
+						"referenceName": "DWH_Dynamic",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "MRR_SuperPharmStore"
+						}
 					}
 				]
 			},
@@ -290,10 +293,10 @@
 			}
 		],
 		"folder": {
-			"name": "Super Pharm"
+			"name": "Fact Table/Super Pharm"
 		},
 		"annotations": [],
-		"lastPublishTime": "2023-07-02T10:37:46Z"
+		"lastPublishTime": "2023-07-04T11:32:52Z"
 	},
 	"type": "Microsoft.DataFactory/factories/pipelines"
 }
